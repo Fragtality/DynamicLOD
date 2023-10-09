@@ -3,6 +3,12 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# CUSTOM
+Releases/
+*CopyToMSFS.ps1
+desktop.ini
+build.lck
+
 # User-specific files
 *.rsuser
 *.suo
