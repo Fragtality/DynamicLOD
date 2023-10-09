@@ -5,7 +5,7 @@
 
 # CUSTOM
 Releases/
-*CopyToMSFS.ps1
+CopyToMSFS.ps1
 desktop.ini
 build.lck
 
@@ -367,3 +367,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/DynamicLOD/CopyToMSFS.ps1
