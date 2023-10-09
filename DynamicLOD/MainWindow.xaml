@@ -1,0 +1,148 @@
+﻿<Window x:Class="DynamicLOD.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DynamicLOD"
+        mc:Ignorable="d"
+        Title="DynamicLOD" Height="450" Width="800" SizeToContent="WidthAndHeight" ResizeMode="NoResize" IsVisibleChanged="Window_IsVisibleChanged" Closing="Window_Closing">
+    <Window.Resources>
+        <Style TargetType="GroupBox">
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" FontWeight="DemiBold"/>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
+    <Viewbox Name="viewBox" Stretch="None" StretchDirection="DownOnly">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320*" MinWidth="320"/>
+                <ColumnDefinition Width="320*" MinWidth="320"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="64*"/>
+                <RowDefinition Height="64*"/>
+                <RowDefinition Height="256*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Orientation="Vertical">
+                <GroupBox Grid.Row="0" Grid.Column="0" BorderBrush="DarkGray" BorderThickness="1" Margin="10,10,10,8">
+                    <GroupBox.Header>Connection Status</GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Name="lblConnStatMSFS" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" TextBlock.Foreground="Red" Padding="8,0,16,0">MSFS</Label>
+                        <Label Name="lblConnStatSimConnect" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" TextBlock.Foreground="Red" Padding="8,0,16,0">SimConnect</Label>
+                        <Label Name="lblConnStatSession" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" TextBlock.Foreground="Red" Padding="8,0,16,0">Session</Label>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Grid.Row="1" Grid.Column="0" BorderBrush="DarkGray" BorderThickness="1" Margin="10,10,10,8">
+                    <GroupBox.Header>Sim Values</GroupBox.Header>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">ØFPS:</Label>
+                            <Label Name="lblSimFPS" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
+                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">TLOD:</Label>
+                            <Label Name="lblSimTLOD" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
+                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">OLOD:</Label>
+                            <Label Name="lblSimOLOD" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">AGL:</Label>
+                            <Label Name="lblPlaneAGL" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
+                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">FPM:</Label>
+                            <Label Name="lblPlaneVS" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
+                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">Trend:</Label>
+                            <Label Name="lblVSTrend" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" Grid.Column="1" Grid.RowSpan="2">
+                <CheckBox Name="chkOpenWindow" Margin="14,0,0,-4" VerticalContentAlignment="Center" Click="chkOpenWindow_Click">Open Window on App Start</CheckBox>
+                <GroupBox BorderBrush="DarkGray" BorderThickness="1" Margin="10,10,10,8">
+                    <GroupBox.Header>FPS Adaption</GroupBox.Header>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox Name="chkUseTargetFPS" VerticalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Click="chkUseTargetFPS_Click">Limit LODs when below Target Average FPS:</CheckBox>
+                            <TextBox Name="txtTargetFPS" Margin="8,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Label>Reduce LODs by</Label>
+                            <Label>TLOD</Label>
+                            <TextBox Name="txtDecreaseTlod" Margin="2,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                            <Label Margin="8,0,0,0">OLOD</Label>
+                            <TextBox Name="txtDecreaseOlod" Margin="2,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Label>Minimum LOD</Label>
+                            <TextBox Name="txtMinLod" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Label>Reduce for</Label>
+                            <TextBox Name="txtConstraintTicks" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                            <Label>s</Label>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <Label>Reduce only for Indices (#) equal or higher than</Label>
+                            <TextBox Name="txtTargetFpsIndex" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+
+            <GroupBox BorderBrush="DarkGray" BorderThickness="1" Margin="10,10,10,8" Grid.Column="0" Grid.Row="2">
+                <GroupBox.Header>TLOD Levels</GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <Label>AGL</Label>
+                        <TextBox Name="txtTlodAlt" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42"></TextBox>
+                        <Label Margin="8,0,0,0">LOD</Label>
+                        <TextBox Name="txtTlodValue" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42"></TextBox>
+                        <Button Name="btnTlodChange" Margin="12,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" Width="24" Click="btnTlodChange_Click">S</Button>
+                        <Button Name="btnTlodAdd" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" Width="24" Click="btnTlodAdd_Click">+</Button>
+                        <Button Name="btnTlodRemove" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" Width="24" Click="btnTlodRemove_Click">-</Button>
+                    </StackPanel>
+                    <DataGrid Name="dgTlodPairs" Width="196" Margin="0,8,0,0" HorizontalAlignment="Center" IsReadOnly="True" AutoGenerateColumns="False"
+                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeColumns="False" CanUserResizeRows="False"
+                              GridLinesVisibility="None" HeadersVisibility="Column"
+                              MouseDoubleClick="dgTlodPairs_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="0.55*" Header="AGL" Binding="{Binding Key}" />
+                            <DataGridTextColumn Width="0.30*" Header="LOD" Binding="{Binding Value}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox BorderBrush="DarkGray" BorderThickness="1" Margin="10,10,10,8" Grid.Column="1" Grid.Row="2">
+                <GroupBox.Header>OLOD Levels</GroupBox.Header>
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <Label>AGL</Label>
+                        <TextBox Name="txtOlodAlt" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42"></TextBox>
+                        <Label Margin="8,0,0,0">LOD</Label>
+                        <TextBox Name="txtOlodValue" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42"></TextBox>
+                        <Button Name="btnOlodChange" Margin="12,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" Width="24" Click="btnOlodChange_Click">S</Button>
+                        <Button Name="btnOlodAdd" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" Width="24" Click="btnOlodAdd_Click">+</Button>
+                        <Button Name="btnOlodRemove" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" Width="24" Click="btnOlodRemove_Click">-</Button>
+                    </StackPanel>
+                    <DataGrid Name="dgOlodPairs" Width="196" Margin="0,8,0,0" HorizontalAlignment="Center" IsReadOnly="True" AutoGenerateColumns="False"
+                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeColumns="False" CanUserResizeRows="False"
+                              GridLinesVisibility="None" HeadersVisibility="Column"
+                              MouseDoubleClick="dgOlodPairs_MouseDoubleClick">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="0.55*" Header="AGL" Binding="{Binding Key}"/>
+                            <DataGridTextColumn Width="0.30*" Header="LOD" Binding="{Binding Value}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+    </Viewbox>
+</Window>

@@ -1,0 +1,408 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
+using System.Windows.Markup;
+
+namespace DynamicLOD
+{
+    public partial class MainWindow : Window
+    {
+        protected NotifyIconViewModel notifyModel;
+        protected ServiceModel serviceModel;
+        protected DispatcherTimer timer;
+
+        protected int editPairTLOD = -1;
+        protected int editPairOLOD = -1;
+
+        public MainWindow(NotifyIconViewModel notifyModel, ServiceModel serviceModel)
+        {
+            InitializeComponent();
+            this.notifyModel = notifyModel;
+            this.serviceModel = serviceModel;
+            
+            string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            assemblyVersion = assemblyVersion[0..assemblyVersion.LastIndexOf('.')];
+            Title += "  (" + assemblyVersion + ")";
+
+            FillIndices(dgTlodPairs);
+            FillIndices(dgOlodPairs);
+
+            timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            timer.Tick += OnTick;
+        }
+
+        protected void LoadSettings()
+        {
+            chkOpenWindow.IsChecked = serviceModel.OpenWindow;
+            chkUseTargetFPS.IsChecked = serviceModel.UseTargetFPS;
+            txtTargetFPS.Text = Convert.ToString(serviceModel.TargetFPS, CultureInfo.CurrentUICulture);
+            txtDecreaseTlod.Text = Convert.ToString(serviceModel.DecreaseTLOD, CultureInfo.CurrentUICulture);
+            txtDecreaseOlod.Text = Convert.ToString(serviceModel.DecreaseOLOD, CultureInfo.CurrentUICulture);
+            txtMinLod.Text = Convert.ToString(serviceModel.MinLOD, CultureInfo.CurrentUICulture);
+            txtConstraintTicks.Text = Convert.ToString(serviceModel.ConstraintTicks, CultureInfo.CurrentUICulture);
+            txtTargetFpsIndex.Text = Convert.ToString(serviceModel.TargetFPSIndex, CultureInfo.CurrentUICulture);
+            dgTlodPairs.ItemsSource =  serviceModel.PairsTLOD.ToDictionary(x => x.Item1, x => x.Item2);
+            dgOlodPairs.ItemsSource = serviceModel.PairsOLOD.ToDictionary(x => x.Item1, x => x.Item2);
+        }
+
+        protected static void FillIndices(DataGrid dataGrid)
+        {
+            DataGridTextColumn column0 = new()
+            {
+                Header = "#",
+                Width = 16
+            };
+
+            Binding bindingColumn0 = new()
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(DataGridRow), 1),
+                Converter = new RowToIndexConvertor()
+            };
+
+            column0.Binding = bindingColumn0;
+
+            dataGrid.Columns.Add(column0);
+        }
+
+        protected void UpdateStatus()
+        {
+            if (serviceModel.IsSimRunning)
+                lblConnStatMSFS.Foreground = new SolidColorBrush(Colors.DarkGreen);
+            else
+                lblConnStatMSFS.Foreground = new SolidColorBrush(Colors.Red);
+
+            if (IPCManager.SimConnect != null && IPCManager.SimConnect.IsReady)
+                lblConnStatSimConnect.Foreground = new SolidColorBrush(Colors.DarkGreen);
+            else
+                lblConnStatSimConnect.Foreground = new SolidColorBrush(Colors.Red);
+
+            if (serviceModel.IsSessionRunning)
+                lblConnStatSession.Foreground = new SolidColorBrush(Colors.DarkGreen);
+            else
+                lblConnStatSession.Foreground = new SolidColorBrush(Colors.Red);
+        }
+
+        protected void UpdateLiveValues()
+        {
+            if (IPCManager.SimConnect != null && IPCManager.SimConnect.IsConnected)
+                lblSimFPS.Content = IPCManager.SimConnect.GetAverageFPS().ToString("F2");
+            else
+                lblSimFPS.Content = "0";
+
+            if (serviceModel.MemoryAccess != null)
+            {
+                lblSimTLOD.Content = serviceModel.MemoryAccess.GetTLOD().ToString();
+                lblSimOLOD.Content = serviceModel.MemoryAccess.GetOLOD().ToString();
+            }
+            else
+            {
+                lblSimTLOD.Content = "0";
+                lblSimOLOD.Content = "0";
+            }
+
+            if (serviceModel.UseTargetFPS && serviceModel.IsSessionRunning)
+            {
+                if (IPCManager.SimConnect.GetAverageFPS() < serviceModel.TargetFPS)
+                    lblSimFPS.Foreground = new SolidColorBrush(Colors.Red);
+                else
+                    lblSimFPS.Foreground = new SolidColorBrush(Colors.DarkGreen);
+            }
+            else
+            {
+                lblSimFPS.Foreground = new SolidColorBrush(Colors.Black);
+            }
+
+            if (serviceModel.fpsMode)
+            {
+                lblSimTLOD.Foreground = new SolidColorBrush(Colors.Red);
+                lblSimOLOD.Foreground = new SolidColorBrush(Colors.Red);
+            }
+            else
+            {
+                lblSimTLOD.Foreground = new SolidColorBrush(Colors.Black);
+                lblSimOLOD.Foreground = new SolidColorBrush(Colors.Black);
+            }
+        }
+
+        protected void UpdateAircraftValues()
+        {
+            if (IPCManager.SimConnect != null && IPCManager.SimConnect.IsConnected)
+            {
+                var simConnect = IPCManager.SimConnect;
+                lblPlaneAGL.Content = simConnect.ReadSimVar("PLANE ALT ABOVE GROUND", "feet").ToString("F0");
+                lblPlaneVS.Content = (simConnect.ReadSimVar("VERTICAL SPEED", "feet per second") * 60.0f).ToString("F0");
+                lblVSTrend.Content = serviceModel.VerticalTrend;
+            }
+            else
+            {
+                lblPlaneAGL.Content = "0";
+                lblPlaneVS.Content = "0";
+                lblVSTrend.Content = "0";
+            }
+        }
+
+        protected void UpdateIndex(DataGrid grid, List<(float, float)> pairs, int index)
+        {
+            if (index >= 0 && index < pairs.Count)
+                grid.SelectedIndex = index;
+        }
+
+        protected void OnTick(object sender, EventArgs e)
+        {
+            UpdateStatus();
+            UpdateLiveValues();
+            UpdateAircraftValues();
+
+            if (serviceModel.IsSessionRunning)
+            {
+                UpdateIndex(dgTlodPairs, serviceModel.PairsTLOD, serviceModel.CurrentPairTLOD);
+                UpdateIndex(dgOlodPairs, serviceModel.PairsOLOD, serviceModel.CurrentPairOLOD);
+            }
+        }
+
+        protected void Window_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (!IsVisible)
+            {
+                notifyModel.CanExecuteHideWindow = false;
+                notifyModel.CanExecuteShowWindow = true;
+                timer.Stop();
+            }
+            else
+            {
+                LoadSettings();
+                timer.Start();
+            }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            Hide();
+        }
+
+        private void chkUseTargetFPS_Click(object sender, RoutedEventArgs e)
+        {
+            serviceModel.SetSetting("useTargetFps", chkUseTargetFPS.IsChecked.ToString().ToLower());
+            LoadSettings();
+        }
+
+        private void chkOpenWindow_Click(object sender, RoutedEventArgs e)
+        {
+            serviceModel.SetSetting("openWindow", chkOpenWindow.IsChecked.ToString().ToLower());
+            LoadSettings();
+        }
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox_SetSetting(sender as TextBox);
+        }
+
+        private void TextBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key != System.Windows.Input.Key.Enter || e.Key != System.Windows.Input.Key.Return)
+                return;
+
+            TextBox_SetSetting(sender as TextBox);
+        }
+
+        private void TextBox_SetSetting(TextBox sender)
+        {
+            if (sender == null || string.IsNullOrWhiteSpace(sender.Text))
+                return;
+
+            string key;
+            bool intValue = false;
+            switch (sender.Name)
+            {
+                case "txtTargetFPS":
+                    key = "targetFps";
+                    intValue = true;
+                    break;
+                case "txtDecreaseTlod":
+                    key = "decreaseTlod";
+                    break;
+                case "txtDecreaseOlod":
+                    key = "decreaseOlod";
+                    break;
+                case "txtConstraintTicks":
+                    key = "constraintTicks";
+                    intValue = true;
+                    break;
+                case "txtTargetFpsIndex":
+                    key = "targetFpsIndex";
+                    intValue = true;
+                    break;
+                case "txtMinLod":
+                    key = "minLod";
+                    break;
+                default:
+                    key = "";
+                    break;
+            }
+
+            if (key == "")
+                return;
+
+            if (intValue && int.TryParse(sender.Text, CultureInfo.InvariantCulture, out int iValue))
+                serviceModel.SetSetting(key, Convert.ToString(iValue, CultureInfo.InvariantCulture));
+
+            if (!intValue && float.TryParse(sender.Text, new RealInvariantFormat(sender.Text), out float fValue))
+                serviceModel.SetSetting(key, Convert.ToString(fValue, CultureInfo.InvariantCulture));
+
+            LoadSettings();
+        }
+
+        private static void SetPairTextBox(DataGrid sender, TextBox alt, TextBox value, ref int index)
+        {
+            if (sender.SelectedIndex == -1 || sender.SelectedItem == null)
+                return;
+
+            var item = (KeyValuePair<float, float>)sender.SelectedItem;
+            alt.Text = Convert.ToString((int)item.Key, CultureInfo.CurrentUICulture);
+            value.Text = Convert.ToString(item.Value, CultureInfo.CurrentUICulture);
+            index = sender.SelectedIndex;
+        }
+
+        private void dgTlodPairs_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            SetPairTextBox(dgTlodPairs, txtTlodAlt, txtTlodValue, ref editPairTLOD);
+        }
+
+        private void dgOlodPairs_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            SetPairTextBox(dgOlodPairs, txtOlodAlt, txtOlodValue, ref editPairOLOD);
+        }
+
+        private void ChangeLodPair(ref int pairIndex, TextBox alt, TextBox value, List<(float, float)> pairs)
+        {
+            if (pairIndex == -1)
+                return;
+
+            if (pairIndex == 0 && alt.Text != "0")
+                alt.Text = "0";
+
+            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod) && pairIndex < pairs.Count)
+            {
+                pairs[pairIndex] = (agl, lod);
+                serviceModel.SavePairs();
+            }
+
+            LoadSettings();
+            alt.Text = "";
+            value.Text = "";
+            pairIndex = -1;
+        }
+
+        private void btnTlodChange_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeLodPair(ref editPairTLOD, txtTlodAlt, txtTlodValue, serviceModel.PairsTLOD);
+        }
+
+        private void btnOlodChange_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeLodPair(ref editPairOLOD, txtOlodAlt, txtOlodValue, serviceModel.PairsOLOD);
+        }
+
+        private void AddLodPair(ref int pairIndex, TextBox alt, TextBox value, List<(float, float)> pairs)
+        {
+            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod))
+            {
+                pairs.Add((agl, lod));
+                ServiceModel.SortTupleList(pairs);
+                serviceModel.SavePairs();
+            }
+
+            LoadSettings();
+            alt.Text = "";
+            value.Text = "";
+            pairIndex = -1;
+        }
+
+        private void btnTlodAdd_Click(object sender, RoutedEventArgs e)
+        {
+            AddLodPair(ref editPairTLOD, txtTlodAlt, txtTlodValue, serviceModel.PairsTLOD);
+        }
+
+        private void btnOlodAdd_Click(object sender, RoutedEventArgs e)
+        {
+            AddLodPair(ref editPairOLOD, txtOlodAlt, txtOlodValue, serviceModel.PairsOLOD);
+        }
+
+        private void RemoveLoadPair(ref int pairIndex, TextBox alt, TextBox value, List<(float, float)> pairs)
+        {
+            if (pairIndex < 1 || pairIndex >= pairs.Count)
+                return;
+
+            pairs.RemoveAt(pairIndex);
+            ServiceModel.SortTupleList(pairs);
+            serviceModel.SavePairs();
+            LoadSettings();
+            alt.Text = "";
+            value.Text = "";
+            pairIndex = -1;
+        }
+
+        private void btnTlodRemove_Click(object sender, RoutedEventArgs e)
+        {
+            RemoveLoadPair(ref editPairTLOD, txtTlodAlt, txtTlodValue, serviceModel.PairsTLOD);
+        }
+
+        private void btnOlodRemove_Click(object sender, RoutedEventArgs e)
+        {
+            RemoveLoadPair(ref editPairOLOD, txtOlodAlt, txtOlodValue, serviceModel.PairsOLOD);
+        }
+    }
+
+    public class RowToIndexConvertor : MarkupExtension, IValueConverter
+    {
+        static RowToIndexConvertor convertor;
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            DataGridRow row = value as DataGridRow;
+
+            if (row != null)
+            {
+                return row.GetIndex() + 1;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object ProvideValue(IServiceProvider serviceProvider)
+        {
+            if (convertor == null)
+            {
+                convertor = new RowToIndexConvertor();
+            }
+
+            return convertor;
+        }
+
+
+        public RowToIndexConvertor()
+        {
+
+        }
+    }
+}
