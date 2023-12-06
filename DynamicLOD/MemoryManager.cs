@@ -18,7 +18,7 @@ namespace DynamicLOD
                 MemoryInterface.Attach(Model.SimBinary);
                 long moduleBase = MemoryInterface.GetModuleAddress(Model.SimModule);
 
-                addrTLOD = MemoryInterface.ReadMemory<long>(moduleBase + 0x004B23A8) + 0x3D0;
+                addrTLOD = MemoryInterface.ReadMemory<long>(moduleBase + 0x004B2368) + 0x3D0;
                 addrTLOD = MemoryInterface.ReadMemory<long>(addrTLOD) + 0xC;
                 addrOLOD = addrTLOD + 0xC;
             }

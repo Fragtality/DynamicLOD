@@ -104,8 +104,16 @@ namespace DynamicLOD
                 }
                 Thread.Sleep(Interval);
             }
-            Model.MemoryAccess = null;
             Logger.Log(LogLevel.Information, "ServiceController:ServiceLoop", "ServiceLoop ended");
+
+            if (true && IPCManager.IsSimRunning())
+            {
+                Logger.Log(LogLevel.Information, "ServiceController:ServiceLoop", "Sim still running, resetting LODs to 2.0");
+                Model.MemoryAccess.SetTLOD(2.0f);
+                Model.MemoryAccess.SetOLOD(2.0f);
+            }
+
+            Model.MemoryAccess = null;
         }
     }
 }
