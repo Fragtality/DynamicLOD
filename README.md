@@ -1,8 +1,10 @@
 # DynamicLOD
 
-Based on muumimorko Idea and Code in MSFS_AdaptiveLOD.<br/><br/>
+Based on muumimorko's Idea and Code in MSFS_AdaptiveLOD.<br/>
+It just a small Test / Proof-of-Concept if MSFS Performance could be improved when dynamically changing the TLOD (and OLOD) based on the current AGL.<br/><br/>
+That being said, DynamicLOD is not meant to be a "User facing" Tool - I can't recommend using it. It actively modifies the Memory of MSFS (basically it works like any "Cheat Trainer"). It likely **violates the Usage Terms** and can be treated as **potential ban-worthy** Behavior. It is like Cheating in a FPS.<br/>So I'm not in anyway responsible for (or interested in) any Problems you're facing using something you should not use.<br/><br/>
 
-Please do not use it. It hacks your Memory. Maybe you get banned. It is bad!
+You have been warned.
 <br/><br/>
 
 ## Requirements
