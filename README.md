@@ -4,15 +4,10 @@ Based on muumimorko's Idea and Code in MSFS_AdaptiveLOD.<br/>
 It just a small Test / Proof-of-Concept if MSFS Performance could be improved when dynamically changing the TLOD (and OLOD) based on the current AGL.<br/><br/>
 That being said, DynamicLOD is not meant to be a "User facing" Tool - I can't recommend using it. It actively modifies the Memory of MSFS (basically it works like any "Cheat Trainer"). It likely **violates the Usage Terms** and can be treated as **potential ban-worthy** Behavior. It is like Cheating in a FPS.<br/>I'm not in anyway responsible for (or interested in) any Problems you're facing using something you should not use. There will be zero Support and I'm not interested in any Suggestions.<br/><br/>
 
-If you don't know how to use it, don't comprehend what it does and the possible Consequences of that: **DO NOT USE IT**.<br/>
-**You have been warned.**
+If you don't know how to use it, don't comprehend what it does and the possible Consequences of that: **DO NOT USE IT**.
 <br/><br/>
 
 ## Requirements
-
-- Windows 10 or 11, MSFS
-- Ability to read
-- Ability to comprehend
 
 The Installer will install the following Software:
 - .NET 7 Desktop Runtime (x64)
