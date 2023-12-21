@@ -51,15 +51,15 @@ Some Notes:
 - There is no automatic Detection if VR is active: you have to manually switch between Profiles.
 - The first Pair with AGL 0 can not be deleted. The AGL can not be changed. Only the xLOD.
 - Additional Pairs can be added at any AGL and xLOD desired. Pairs will always be sorted by AGL.
-- A Pair is selected (and the configured LOD applied) when the current AGL is above the configured AGL. If the current AGL goes below the configured AGL, the next lower Pair will be selected.
+- A Pair is selected (and the configured xLOD applied) when the current AGL is above the configured AGL. If the current AGL goes below the configured AGL, the next lower Pair will be selected.
 - Plus is Add, Minus is Remove, S is Set (Change). Remove and Set require to double-click the Pair first.
 - Switching is on your VS Trend - it will not change to a lower Pair (descreasing AGL) while your Climbing and vice versa.
 - **Less is more**:
   - Fewer Increments/Decrements are better. Of reasonable Step-Size (roughly in the Range of 25-75).
   - Some Time in between Changes is better.
-  - Don't overdo it with extreme low or high LOD Values. A LOD of 100 is reasonable fine on Ground, 200-ish is reasonable fine in Air.
+  - Don't overdo it with extreme low or high xLOD Values. A xLOD of 100 is reasonable fine on Ground, 200-ish is reasonable fine in Air.
   - Tune your AGL/LOD Pairs to the desired Performance (which is more than just FPS).
-  - FPS Adaption is just *one temporary* Adjustment on the current AGL/LOD Pair to fight some special/rare Situations.
+  - FPS Adaption is just *one temporary* Adjustment on the current AGL/xLOD Pair to fight some special/rare Situations.
   - Forcing the Sim to (un)load Objects in rapid Succession defeats the Goal to reduce Stutters. It is *not* about FPS.
   - Smooth Transitions lead to smoother Experiences.
 - Rest should be self-explanatory. And if it is not: You are using something you really should not use.
