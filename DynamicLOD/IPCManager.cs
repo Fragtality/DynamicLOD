@@ -80,6 +80,7 @@ namespace DynamicLOD
         {
             int waitDuration = 5000;
             SimConnect.SubscribeSimVar("CAMERA STATE", "Enum");
+            SimConnect.SubscribeSimVar("PLANE IN PARKING STATE", "Bool");
             Thread.Sleep(250);
             bool isReady = IsCamReady();
             while (IsSimRunning() && !isReady && !model.CancellationRequested)
@@ -101,8 +102,9 @@ namespace DynamicLOD
         public static bool IsCamReady()
         {
             float value = SimConnect.ReadSimVar("CAMERA STATE", "Enum");
+            bool parkState = SimConnect.ReadSimVar("PLANE IN PARKING STATE", "Bool") == 1;
 
-            return value >= 2 && value <= 5;
+            return value >= 2 && value <= 5 && !parkState;
         }
 
         public static void CloseSafe()

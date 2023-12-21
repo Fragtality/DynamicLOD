@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -8,9 +7,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Windows.Markup;
 
 namespace DynamicLOD
 {
@@ -36,6 +35,9 @@ namespace DynamicLOD
             FillIndices(dgTlodPairs);
             FillIndices(dgOlodPairs);
 
+            for (int i = 0; i < ServiceModel.maxProfile; i++)
+                cbProfile.Items.Add($"{i + 1}");
+
             timer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromSeconds(1)
@@ -47,14 +49,18 @@ namespace DynamicLOD
         {
             chkOpenWindow.IsChecked = serviceModel.OpenWindow;
             chkUseTargetFPS.IsChecked = serviceModel.UseTargetFPS;
+            cbProfile.SelectedIndex = serviceModel.SelectedProfile;
+            dgTlodPairs.ItemsSource = serviceModel.PairsTLOD[serviceModel.SelectedProfile].ToDictionary(x => x.Item1, x => x.Item2);
+            dgOlodPairs.ItemsSource = serviceModel.PairsOLOD[serviceModel.SelectedProfile].ToDictionary(x => x.Item1, x => x.Item2);
+            chkProfileIsVr.IsChecked = serviceModel.IsVR;
             txtTargetFPS.Text = Convert.ToString(serviceModel.TargetFPS, CultureInfo.CurrentUICulture);
             txtDecreaseTlod.Text = Convert.ToString(serviceModel.DecreaseTLOD, CultureInfo.CurrentUICulture);
             txtDecreaseOlod.Text = Convert.ToString(serviceModel.DecreaseOLOD, CultureInfo.CurrentUICulture);
             txtMinLod.Text = Convert.ToString(serviceModel.MinLOD, CultureInfo.CurrentUICulture);
             txtConstraintTicks.Text = Convert.ToString(serviceModel.ConstraintTicks, CultureInfo.CurrentUICulture);
             txtTargetFpsIndex.Text = Convert.ToString(serviceModel.TargetFPSIndex, CultureInfo.CurrentUICulture);
-            dgTlodPairs.ItemsSource =  serviceModel.PairsTLOD.ToDictionary(x => x.Item1, x => x.Item2);
-            dgOlodPairs.ItemsSource = serviceModel.PairsOLOD.ToDictionary(x => x.Item1, x => x.Item2);
+            txtTlodDefault.Text = Convert.ToString(serviceModel.DefaultTLOD, CultureInfo.CurrentUICulture);
+            txtOlodDefault.Text = Convert.ToString(serviceModel.DefaultOLOD, CultureInfo.CurrentUICulture);
         }
 
         protected static void FillIndices(DataGrid dataGrid)
@@ -103,13 +109,13 @@ namespace DynamicLOD
 
             if (serviceModel.MemoryAccess != null)
             {
-                lblSimTLOD.Content = serviceModel.MemoryAccess.GetTLOD().ToString();
-                lblSimOLOD.Content = serviceModel.MemoryAccess.GetOLOD().ToString();
+                lblSimTLOD.Content = serviceModel.MemoryAccess.GetTLOD().ToString("F0") + " / " + serviceModel.MemoryAccess.GetTLOD_VR().ToString("F0");
+                lblSimOLOD.Content = serviceModel.MemoryAccess.GetOLOD().ToString("F0") + " / " + serviceModel.MemoryAccess.GetOLOD_VR().ToString("F0");
             }
             else
             {
-                lblSimTLOD.Content = "0";
-                lblSimOLOD.Content = "0";
+                lblSimTLOD.Content = "0 / 0";
+                lblSimOLOD.Content = "0 / 0";
             }
 
             if (serviceModel.UseTargetFPS && serviceModel.IsSessionRunning)
@@ -143,7 +149,14 @@ namespace DynamicLOD
                 var simConnect = IPCManager.SimConnect;
                 lblPlaneAGL.Content = simConnect.ReadSimVar("PLANE ALT ABOVE GROUND", "feet").ToString("F0");
                 lblPlaneVS.Content = (simConnect.ReadSimVar("VERTICAL SPEED", "feet per second") * 60.0f).ToString("F0");
-                lblVSTrend.Content = serviceModel.VerticalTrend;
+                if (serviceModel.OnGround)
+                    lblVSTrend.Content = "Ground";
+                else if (serviceModel.VerticalTrend > 0)
+                    lblVSTrend.Content = "Climb";
+                else if (serviceModel.VerticalTrend < 0)
+                    lblVSTrend.Content = "Descent";
+                else
+                    lblVSTrend.Content = "Cruise";
             }
             else
             {
@@ -153,7 +166,7 @@ namespace DynamicLOD
             }
         }
 
-        protected void UpdateIndex(DataGrid grid, List<(float, float)> pairs, int index)
+        protected static void UpdateIndex(DataGrid grid, List<(float, float)> pairs, int index)
         {
             if (index >= 0 && index < pairs.Count)
                 grid.SelectedIndex = index;
@@ -167,8 +180,8 @@ namespace DynamicLOD
 
             if (serviceModel.IsSessionRunning)
             {
-                UpdateIndex(dgTlodPairs, serviceModel.PairsTLOD, serviceModel.CurrentPairTLOD);
-                UpdateIndex(dgOlodPairs, serviceModel.PairsOLOD, serviceModel.CurrentPairOLOD);
+                UpdateIndex(dgTlodPairs, serviceModel.PairsTLOD[serviceModel.SelectedProfile], serviceModel.CurrentPairTLOD);
+                UpdateIndex(dgOlodPairs, serviceModel.PairsOLOD[serviceModel.SelectedProfile], serviceModel.CurrentPairOLOD);
             }
         }
 
@@ -212,7 +225,7 @@ namespace DynamicLOD
 
         private void TextBox_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key != System.Windows.Input.Key.Enter || e.Key != System.Windows.Input.Key.Return)
+            if (e.Key != Key.Enter || e.Key != Key.Return)
                 return;
 
             TextBox_SetSetting(sender as TextBox);
@@ -225,6 +238,7 @@ namespace DynamicLOD
 
             string key;
             bool intValue = false;
+            bool notNegative = true;
             switch (sender.Name)
             {
                 case "txtTargetFPS":
@@ -248,6 +262,12 @@ namespace DynamicLOD
                 case "txtMinLod":
                     key = "minLod";
                     break;
+                case "txtTlodDefault":
+                    key = "defaultTlod";
+                    break;
+                case "txtOlodDefault":
+                    key = "defaultOlod";
+                    break;
                 default:
                     key = "";
                     break;
@@ -257,10 +277,18 @@ namespace DynamicLOD
                 return;
 
             if (intValue && int.TryParse(sender.Text, CultureInfo.InvariantCulture, out int iValue))
+            {
+                if (notNegative)
+                    iValue = Math.Abs(iValue);
                 serviceModel.SetSetting(key, Convert.ToString(iValue, CultureInfo.InvariantCulture));
+            }
 
             if (!intValue && float.TryParse(sender.Text, new RealInvariantFormat(sender.Text), out float fValue))
+            {
+                if (notNegative)
+                    fValue = Math.Abs(fValue);
                 serviceModel.SetSetting(key, Convert.ToString(fValue, CultureInfo.InvariantCulture));
+            }
 
             LoadSettings();
         }
@@ -294,7 +322,7 @@ namespace DynamicLOD
             if (pairIndex == 0 && alt.Text != "0")
                 alt.Text = "0";
 
-            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod) && pairIndex < pairs.Count)
+            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod) && pairIndex < pairs.Count && agl >= 0 && lod >= serviceModel.SimMinLOD)
             {
                 pairs[pairIndex] = (agl, lod);
                 serviceModel.SavePairs();
@@ -308,17 +336,17 @@ namespace DynamicLOD
 
         private void btnTlodChange_Click(object sender, RoutedEventArgs e)
         {
-            ChangeLodPair(ref editPairTLOD, txtTlodAlt, txtTlodValue, serviceModel.PairsTLOD);
+            ChangeLodPair(ref editPairTLOD, txtTlodAlt, txtTlodValue, serviceModel.PairsTLOD[serviceModel.SelectedProfile]);
         }
 
         private void btnOlodChange_Click(object sender, RoutedEventArgs e)
         {
-            ChangeLodPair(ref editPairOLOD, txtOlodAlt, txtOlodValue, serviceModel.PairsOLOD);
+            ChangeLodPair(ref editPairOLOD, txtOlodAlt, txtOlodValue, serviceModel.PairsOLOD[serviceModel.SelectedProfile]);
         }
 
         private void AddLodPair(ref int pairIndex, TextBox alt, TextBox value, List<(float, float)> pairs)
         {
-            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod))
+            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod) && agl >= 0 && lod >= serviceModel.SimMinLOD)
             {
                 pairs.Add((agl, lod));
                 ServiceModel.SortTupleList(pairs);
@@ -333,12 +361,12 @@ namespace DynamicLOD
 
         private void btnTlodAdd_Click(object sender, RoutedEventArgs e)
         {
-            AddLodPair(ref editPairTLOD, txtTlodAlt, txtTlodValue, serviceModel.PairsTLOD);
+            AddLodPair(ref editPairTLOD, txtTlodAlt, txtTlodValue, serviceModel.PairsTLOD[serviceModel.SelectedProfile]);
         }
 
         private void btnOlodAdd_Click(object sender, RoutedEventArgs e)
         {
-            AddLodPair(ref editPairOLOD, txtOlodAlt, txtOlodValue, serviceModel.PairsOLOD);
+            AddLodPair(ref editPairOLOD, txtOlodAlt, txtOlodValue, serviceModel.PairsOLOD[serviceModel.SelectedProfile]);
         }
 
         private void RemoveLoadPair(ref int pairIndex, TextBox alt, TextBox value, List<(float, float)> pairs)
@@ -357,12 +385,30 @@ namespace DynamicLOD
 
         private void btnTlodRemove_Click(object sender, RoutedEventArgs e)
         {
-            RemoveLoadPair(ref editPairTLOD, txtTlodAlt, txtTlodValue, serviceModel.PairsTLOD);
+            RemoveLoadPair(ref editPairTLOD, txtTlodAlt, txtTlodValue, serviceModel.PairsTLOD[serviceModel.SelectedProfile]);
         }
 
         private void btnOlodRemove_Click(object sender, RoutedEventArgs e)
         {
-            RemoveLoadPair(ref editPairOLOD, txtOlodAlt, txtOlodValue, serviceModel.PairsOLOD);
+            RemoveLoadPair(ref editPairOLOD, txtOlodAlt, txtOlodValue, serviceModel.PairsOLOD[serviceModel.SelectedProfile]);
+        }
+
+        private void cbProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cbProfile.SelectedIndex >= 0 && cbProfile.SelectedIndex <= ServiceModel.maxProfile)
+            {
+                serviceModel.SetSetting("selectedProfile", cbProfile.SelectedIndex.ToString());
+                LoadSettings();
+            }
+        }
+
+        private void chkProfileIsVr_Click(object sender, RoutedEventArgs e)
+        {
+            if (cbProfile.SelectedIndex >= 0 && cbProfile.SelectedIndex <= ServiceModel.maxProfile)
+            {
+                serviceModel.SetSetting($"isVr{serviceModel.SelectedProfile}", chkProfileIsVr.IsChecked.ToString().ToLower());
+                LoadSettings();
+            }
         }
     }
 
@@ -372,11 +418,9 @@ namespace DynamicLOD
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            DataGridRow row = value as DataGridRow;
-
-            if (row != null)
+            if (value != null && value is DataGridRow row)
             {
-                return row.GetIndex() + 1;
+                return row.GetIndex();
             }
             else
             {
@@ -391,10 +435,7 @@ namespace DynamicLOD
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
-            if (convertor == null)
-            {
-                convertor = new RowToIndexConvertor();
-            }
+            convertor ??= new RowToIndexConvertor();
 
             return convertor;
         }

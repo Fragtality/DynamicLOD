@@ -17,13 +17,25 @@ namespace DynamicLOD
         private TaskbarIcon notifyIcon;
 
         public static new App Current => Application.Current as App;
+        public static string ConfigFile = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\DynamicLOD\DynamicLOD.config";
+        public static string AppDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\DynamicLOD\bin";
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            var args = Environment.GetCommandLineArgs();
-            if (args.Length == 3 && args[1].ToLower() == "-path" && Directory.Exists(args[2]))
-                Directory.SetCurrentDirectory(args[2]);
+
+            Directory.SetCurrentDirectory(AppDir);
+
+            if (!File.Exists(ConfigFile))
+            {
+                ConfigFile = Directory.GetCurrentDirectory() + @"\DynamicLOD.config";
+                if (!File.Exists(ConfigFile))
+                {
+                    MessageBox.Show("No Configuration File found! Closing ...", "Critical Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Application.Current.Shutdown();
+                    return;
+                }
+            }
 
             Model = new();
             InitLog();
@@ -63,8 +75,8 @@ namespace DynamicLOD
 
         protected void InitLog()
         {
-            string logFilePath = Model.GetSetting("logFilePath", "DynamicLOD.log");
-            string logLevel = Model.GetSetting("logLevel", "Debug");
+            string logFilePath = @"..\log\" + Model.GetSetting("logFilePath", "Fenix2GSX.log");
+            string logLevel = Model.GetSetting("logLevel", "Debug"); ;
             LoggerConfiguration loggerConfiguration = new LoggerConfiguration().WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 3,
                                                     outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message} {NewLine}{Exception}");
             if (logLevel == "Warning")

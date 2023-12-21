@@ -31,41 +31,58 @@
             </Grid.RowDefinitions>
 
             <StackPanel Orientation="Vertical">
-                <GroupBox Grid.Row="0" Grid.Column="0" BorderBrush="DarkGray" BorderThickness="1" Margin="10,10,10,8">
+                <GroupBox Grid.Row="0" Grid.Column="0" BorderBrush="DarkGray" BorderThickness="1" Margin="10,8,10,8">
                     <GroupBox.Header>Connection Status</GroupBox.Header>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <Label Name="lblConnStatMSFS" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" TextBlock.Foreground="Red" Padding="8,0,16,0">MSFS</Label>
                         <Label Name="lblConnStatSimConnect" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" TextBlock.Foreground="Red" Padding="8,0,16,0">SimConnect</Label>
                         <Label Name="lblConnStatSession" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" TextBlock.Foreground="Red" Padding="8,0,16,0">Session</Label>
                     </StackPanel>
                 </GroupBox>
 
-                <GroupBox Grid.Row="1" Grid.Column="0" BorderBrush="DarkGray" BorderThickness="1" Margin="10,10,10,8">
+                <GroupBox Grid.Row="1" Grid.Column="0" BorderBrush="DarkGray" BorderThickness="1" Margin="10,14,10,0">
                     <GroupBox.Header>Sim Values</GroupBox.Header>
-                    <StackPanel Orientation="Vertical">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">ØFPS:</Label>
-                            <Label Name="lblSimFPS" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
-                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">TLOD:</Label>
-                            <Label Name="lblSimTLOD" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
-                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">OLOD:</Label>
-                            <Label Name="lblSimOLOD" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition MinWidth="48" Width="*"/>
+                            <ColumnDefinition MinWidth="48" Width="*"/>
+                            <ColumnDefinition MinWidth="48" Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition MinHeight="32" Height="*"/>
+                            <RowDefinition MinHeight="32" Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label MinWidth="60" VerticalContentAlignment="Center">ØFPS:</Label>
+                            <Label Name="lblSimFPS" MinWidth="64" VerticalContentAlignment="Center">0</Label>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">AGL:</Label>
-                            <Label Name="lblPlaneAGL" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
-                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">FPM:</Label>
-                            <Label Name="lblPlaneVS" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
-                            <Label Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">Trend:</Label>
-                            <Label Name="lblVSTrend" Height="40" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="8,0,16,0">0</Label>
+                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label MinWidth="60" VerticalContentAlignment="Center">TLOD/VR:</Label>
+                            <Label Name="lblSimTLOD" MinWidth="64" VerticalContentAlignment="Center">0 / 0</Label>
                         </StackPanel>
-                    </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label MinWidth="60" VerticalContentAlignment="Center">OLOD/VR:</Label>
+                            <Label Name="lblSimOLOD" MinWidth="64" VerticalContentAlignment="Center">0 / 0</Label>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label MinWidth="60" VerticalContentAlignment="Center">AGL:</Label>
+                            <Label Name="lblPlaneAGL" MinWidth="64" VerticalContentAlignment="Center">0</Label>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label MinWidth="60" VerticalContentAlignment="Center">FPM:</Label>
+                            <Label Name="lblPlaneVS" MinWidth="64" VerticalContentAlignment="Center">0</Label>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Label MinWidth="60" VerticalContentAlignment="Center">Trend:</Label>
+                            <Label Name="lblVSTrend" MinWidth="64" VerticalContentAlignment="Center">0</Label>
+                        </StackPanel>
+                    </Grid>
                 </GroupBox>
             </StackPanel>
 
             <StackPanel Orientation="Vertical" Grid.Column="1" Grid.RowSpan="2">
-                <CheckBox Name="chkOpenWindow" Margin="14,0,0,-4" VerticalContentAlignment="Center" Click="chkOpenWindow_Click">Open Window on App Start</CheckBox>
-                <GroupBox BorderBrush="DarkGray" BorderThickness="1" Margin="10,10,10,8">
+                <GroupBox BorderBrush="DarkGray" BorderThickness="1" Margin="10,8,10,8">
                     <GroupBox.Header>FPS Adaption</GroupBox.Header>
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
@@ -81,18 +98,50 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                             <Label>Minimum LOD</Label>
-                            <TextBox Name="txtMinLod" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                            <TextBox Name="txtMinLod" Margin="5,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
                             <Label>Reduce for</Label>
-                            <TextBox Name="txtConstraintTicks" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                            <TextBox Name="txtConstraintTicks" Margin="24,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
                             <Label>s</Label>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                            <Label>Reduce only for Indices (#) equal or higher than</Label>
-                            <TextBox Name="txtTargetFpsIndex" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                            <Label>
+                                <TextBlock>Reduce only Pairs/Indices equal or higher than <Underline><Bold>#</Bold></Underline></TextBlock>
+                            </Label>
+                            <TextBox Name="txtTargetFpsIndex" Margin="0,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
                         </StackPanel>
                     </StackPanel>
+                </GroupBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
+                <GroupBox BorderBrush="DarkGray" BorderThickness="1" Margin="10,8,10,8">
+                    <GroupBox.Header>General</GroupBox.Header>
+                    <Grid Margin="0,2,0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
+                            <Label VerticalContentAlignment="Center">Use Profile</Label>
+                            <ComboBox Name="cbProfile" SelectionChanged="cbProfile_SelectionChanged" MinWidth="48" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></ComboBox>
+                            <CheckBox Name="chkProfileIsVr" VerticalContentAlignment="Center" Margin="4,0,4,0" Click="chkProfileIsVr_Click">VR Profile</CheckBox>
+                        </StackPanel>
+                        <CheckBox Grid.Row="0" Grid.Column="1" Name="chkOpenWindow" Margin="6" VerticalContentAlignment="Center" Click="chkOpenWindow_Click">Open Window on App Start</CheckBox>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="0,8,0,0">
+                            <Label VerticalContentAlignment="Center">Reset TLOD after Session to</Label>
+                            <TextBox Name="txtTlodDefault" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,8,0,0">
+                            <Label VerticalContentAlignment="Center">Reset OLOD after Session to</Label>
+                            <TextBox Name="txtOlodDefault" Margin="4,0,0,0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="24" MaxHeight="24" MinHeight="24" Width="42" LostFocus="TextBox_LostFocus" KeyUp="TextBox_KeyUp"></TextBox>
+                        </StackPanel>
+                    </Grid>
                 </GroupBox>
             </StackPanel>
 

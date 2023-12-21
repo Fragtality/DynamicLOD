@@ -108,10 +108,12 @@ namespace DynamicLOD
 
             if (true && IPCManager.IsSimRunning())
             {
-                Logger.Log(LogLevel.Information, "ServiceController:ServiceLoop", "Sim still running, resetting LODs to 2.0");
-                Model.MemoryAccess.SetTLOD(2.0f);
-                Model.MemoryAccess.SetOLOD(2.0f);
+                Logger.Log(LogLevel.Information, "ServiceController:ServiceLoop", $"Sim still running, resetting LODs to {Model.DefaultTLOD} / {Model.DefaultOLOD}");
+                Model.MemoryAccess.SetTLOD(Model.DefaultTLOD);
+                Model.MemoryAccess.SetOLOD(Model.DefaultOLOD);
             }
+
+            Model.IsSessionRunning = false;
 
             Model.MemoryAccess = null;
         }
