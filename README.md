@@ -30,13 +30,13 @@ Some Notes:
 - If you upgrade from Version 0.3.0 or below, delete your old Installation manually (it is no longer needed).
 - From Version 0.3.0 onwards, your Configuration is *not* be resetted after Updating.
 - Do not copy over a Configuration from a Version below 0.3.0
+- Do not run the Installer as Admin!
+- For Auto-Start either your FSUIPC7.ini or EXE.xml (MSFS) is modified. The Installer does not create a Backup.
+- It may be blocked by Windows Security or your AV-Scanner, try if unblocking and/or setting an Exception helps (for the whole Folder)
 - The Installation-Location is fixed to %appdata%\DynamicLOD (your Users AppData\Roaming Folder) and can not be changed.
   - Binary in %appdata%\DynamicLOD\bin
   - Logs in %appdata%\DynamicLOD\log
   - Config: %appdata%\DynamicLOD\DynamicLOD.config
-- For Auto-Start either your FSUIPC7.ini or EXE.xml (MSFS) is modified. The Installer does not create a Backup.
-- Do not run the Installer as Admin!
-- It may be blocked by Windows Security or your AV-Scanner, try if unblocking and/or setting an Exception helps (for the whole Folder)
 
 <br/><br/>
 
