@@ -7,6 +7,8 @@ namespace Installer
     {
         public static readonly string fileName = "AppPackage.zip";
 
+        public static readonly string appName = "DynamicLOD";
+        public static readonly string appBinary = $"{appName}.exe";
         public static readonly string appDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\DynamicLOD";
         public static readonly string binDir = appDir + @"\bin";
         public static readonly string binPath = binDir + @"\DynamicLOD.exe";

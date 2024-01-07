@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -18,6 +19,7 @@ namespace Installer
 {
     public enum AutoStart
     {
+        REMOVE = -1,
         NONE = 0,
         FSUIPC,
         EXE
@@ -32,7 +34,7 @@ namespace Installer
         }
 
         #region Install Actions
-        public static bool AutoStartFsuipc()
+        public static bool AutoStartFsuipc(bool removeEntry = false)
         {
             bool result = false;
             string programParam = "READY";
@@ -50,9 +52,9 @@ namespace Installer
                 if (File.Exists(regPath))
                 {
                     string fileContent = File.ReadAllText(regPath, Encoding.Default);
-                    if (!fileContent.Contains("[Programs]"))
+                    if (!fileContent.Contains("[Programs]") && !removeEntry)
                     {
-                        fileContent += $"\r\n[Programs]\r\nRunIf1={programParam},KILL,{Parameters.binPath}";
+                        fileContent += $"\r\n[Programs]\r\nRunIf1={programParam},CLOSE,{Parameters.binPath}";
                         File.WriteAllText(regPath, fileContent, Encoding.Default);
                         result = true;
                     }
@@ -69,15 +71,21 @@ namespace Installer
                         if (runIfMatches.Count > 0 && runIfMatches[runIfMatches.Count - 1].Groups.Count == 2)
                             lastRunIf = Convert.ToInt32(runIfMatches[runIfMatches.Count - 1].Groups[1].Value);
 
-                        if (Regex.IsMatch(fileContent, @"^[;]{0,1}Run(\d+).*DynamicLOD\.exe", regOptions))
+                        if (Regex.IsMatch(fileContent, @"^[;]{0,1}Run(\d+).*" + Parameters.appName + "\\.exe", regOptions))
                         {
-                            fileContent = Regex.Replace(fileContent, @"^[;]{0,1}Run(\d+).*DynamicLOD\.exe", $"RunIf{lastRunIf+1}={programParam},KILL,{Parameters.binPath}", regOptions);
+                            if (!removeEntry)
+                                fileContent = Regex.Replace(fileContent, @"^[;]{0,1}Run(\d+).*" + Parameters.appName + "\\.exe", $"RunIf{lastRunIf + 1}={programParam},CLOSE,{Parameters.binPath}", regOptions);
+                            else
+                                fileContent = Regex.Replace(fileContent, @"^[;]{0,1}Run(\d+).*" + Parameters.appName + "\\.exe", $"", regOptions);
                             File.WriteAllText(regPath, fileContent, Encoding.Default);
                             result = true;
                         }
-                        else if (Regex.IsMatch(fileContent, @"^[;]{0,1}RunIf(\d+).*DynamicLOD\.exe", regOptions))
+                        else if (Regex.IsMatch(fileContent, @"^[;]{0,1}RunIf(\d+).*" + Parameters.appName + "\\.exe", regOptions))
                         {
-                            fileContent = Regex.Replace(fileContent, @"^[;]{0,1}RunIf(\d+).*DynamicLOD\.exe", $"RunIf$1={programParam},KILL,{Parameters.binPath}", regOptions);
+                            if (!removeEntry)
+                                fileContent = Regex.Replace(fileContent, @"^[;]{0,1}RunIf(\d+).*" + Parameters.appName + "\\.exe", $"RunIf$1={programParam},CLOSE,{Parameters.binPath}", regOptions);
+                            else
+                                fileContent = Regex.Replace(fileContent, @"^[;]{0,1}RunIf(\d+).*" + Parameters.appName + "\\.exe", $"", regOptions);
                             File.WriteAllText(regPath, fileContent, Encoding.Default);
                             result = true;
                         }
@@ -92,18 +100,18 @@ namespace Installer
                             }
                             else if (runIfMatches.Count > 0)
                                 index = runIfMatches[runIfMatches.Count - 1].Index + runIfMatches[runIfMatches.Count - 1].Length;
-                            else if(runMatches.Count > 0)
+                            else if (runMatches.Count > 0)
                                 index = runMatches[runMatches.Count - 1].Index + runMatches[runMatches.Count - 1].Length;
 
-                            if (index > 0)
+                            if (index > 0 && !removeEntry)
                             {
-                                fileContent = fileContent.Insert(index + 1, $"RunIf{lastRunIf + 1}={programParam},KILL,{Parameters.binPath}\r\n");
+                                fileContent = fileContent.Insert(index + 1, $"RunIf{lastRunIf + 1}={programParam},CLOSE,{Parameters.binPath}\r\n");
                                 File.WriteAllText(regPath, fileContent, Encoding.Default);
                                 result = true;
                             }
-                            else
+                            else if (!removeEntry)
                             {
-                                fileContent = Regex.Replace(fileContent, @"^\[Programs\]\r\n", $"[Programs]\r\nRunIf{lastRunIf + 1}={programParam},KILL,{Parameters.binPath}\r\n", regOptions);
+                                fileContent = Regex.Replace(fileContent, @"^\[Programs\]\r\n", $"[Programs]\r\nRunIf{lastRunIf + 1}={programParam},CLOSE,{Parameters.binPath}\r\n", regOptions);
                                 File.WriteAllText(regPath, fileContent, Encoding.Default);
                                 result = true;
                             }
@@ -119,7 +127,7 @@ namespace Installer
             return result;
         }
 
-        public static bool AutoStartExe()
+        public static bool AutoStartExe(bool removeEntry = false)
         {
             bool result = false;
 
@@ -134,26 +142,35 @@ namespace Installer
 
                 bool found = false;
                 XmlNode simbase = xmlDoc.ChildNodes[1];
+                List<XmlNode> removeList = new List<XmlNode>();
                 foreach (XmlNode outerNode in simbase.ChildNodes)
                 {
-                    if (outerNode.Name == "Launch.Addon" && outerNode.InnerText.Contains("DynamicLOD.exe"))
+                    if (outerNode.Name == "Launch.Addon" && outerNode.InnerText.Contains(Parameters.appBinary))
                     {
                         found = true;
-                        foreach (XmlNode innerNode in outerNode.ChildNodes)
+
+                        if (!removeEntry)
                         {
-                            if (innerNode.Name == "Disabled")
-                                innerNode.InnerText = "False";
-                            else if (innerNode.Name == "Path")
-                                innerNode.InnerText = Parameters.binPath;
-                            else if (innerNode.Name == "CommandLine")
-                                innerNode.InnerText = "";
-                            else if (innerNode.Name == "ManualLoad")
-                                innerNode.InnerText = "False";
+                            foreach (XmlNode innerNode in outerNode.ChildNodes)
+                            {
+                                if (innerNode.Name == "Disabled")
+                                    innerNode.InnerText = "False";
+                                else if (innerNode.Name == "Path")
+                                    innerNode.InnerText = Parameters.binPath;
+                                else if (innerNode.Name == "CommandLine")
+                                    innerNode.InnerText = "";
+                                else if (innerNode.Name == "ManualLoad")
+                                    innerNode.InnerText = "False";
+                            }
                         }
+                        else
+                            removeList.Add(outerNode);
                     }
                 }
+                foreach (XmlNode node in removeList)
+                    xmlDoc.ChildNodes[1].RemoveChild(node);
 
-                if (!found)
+                if (!found && !removeEntry)
                 {
                     XmlNode outerNode = xmlDoc.CreateElement("Launch.Addon");
 
@@ -166,7 +183,7 @@ namespace Installer
                     outerNode.AppendChild(innerNode);
 
                     innerNode = xmlDoc.CreateElement("Name");
-                    innerNode.InnerText = "DynamicLOD";
+                    innerNode.InnerText = Parameters.appName;
                     outerNode.AppendChild(innerNode);
 
                     innerNode = xmlDoc.CreateElement("Path");
@@ -194,12 +211,12 @@ namespace Installer
             {
                 IShellLink link = (IShellLink)new ShellLink();
 
-                link.SetDescription("Start DynamicLOD");
+                link.SetDescription("Start " + Parameters.appName);
                 link.SetPath(Parameters.binPath);
 
                 IPersistFile file = (IPersistFile)link;
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                file.Save(Path.Combine(desktopPath, "DynamicLOD.lnk"), false);
+                file.Save(Path.Combine(desktopPath, $"{Parameters.appName}.lnk"), false);
                 result = true;
             }
             catch (Exception e)
@@ -473,6 +490,22 @@ namespace Installer
                 return false;
         }
 
+        public static bool StringEqual(string input, int compare)
+        {
+            if (int.TryParse(input, NumberStyles.Number, CultureInfo.InvariantCulture, out int numA) && numA == compare)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool StringGreater(string input, int compare)
+        {
+            if (int.TryParse(input, NumberStyles.Number, CultureInfo.InvariantCulture, out int numA) && numA > compare)
+                return true;
+            else
+                return false;
+        }
+
         public static bool CheckDotNet()
         {
             try
@@ -484,9 +517,12 @@ namespace Installer
                 var matches = Parameters.netDesktop.Matches(output);
                 foreach (Match match in matches)
                 {
-                    if (!match.Success || match.Groups.Count != 5) continue;
-
-                    if (StringGreaterEqual(match.Groups[2].Value, Parameters.netMajor) && StringGreaterEqual(match.Groups[3].Value, Parameters.netMinor) && StringGreaterEqual(match.Groups[4].Value, Parameters.netPatch))
+                    if (!match.Success || match.Groups.Count != 5)
+                        continue;
+                    if (!StringEqual(match.Groups[2].Value, Parameters.netMajor))
+                        continue;
+                    if ((StringEqual(match.Groups[3].Value, Parameters.netMinor) && StringGreaterEqual(match.Groups[4].Value, Parameters.netPatch))
+                        || StringGreater(match.Groups[3].Value, Parameters.netMinor))
                         installedDesktop = true;
                 }
 

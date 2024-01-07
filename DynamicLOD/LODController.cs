@@ -26,6 +26,7 @@ namespace DynamicLOD
             SimConnect = IPCManager.SimConnect;
             SimConnect.SubscribeSimVar("VERTICAL SPEED", "feet per second");
             SimConnect.SubscribeSimVar("PLANE ALT ABOVE GROUND", "feet");
+            SimConnect.SubscribeSimVar("PLANE ALT ABOVE GROUND MINUS CG", "feet");
             SimConnect.SubscribeSimVar("SIM ON GROUND", "Bool");
             tlod = Model.MemoryAccess.GetTLOD();
             olod = Model.MemoryAccess.GetOLOD();
@@ -38,9 +39,9 @@ namespace DynamicLOD
         {
             float vs = SimConnect.ReadSimVar("VERTICAL SPEED", "feet per second");
             Model.OnGround = SimConnect.ReadSimVar("SIM ON GROUND", "Bool") == 1.0f;
-            if (vs >= 10.0f)
+            if (vs >= 8.0f)
                 verticalStats[verticalIndex] = 1;
-            else if (vs <= -10.0f)
+            else if (vs <= -8.0f)
                 verticalStats[verticalIndex] = -1;
             else
                 verticalStats[verticalIndex] = 0;
@@ -52,6 +53,8 @@ namespace DynamicLOD
             Model.VerticalTrend = VerticalAverage();
 
             altAboveGnd = (int)SimConnect.ReadSimVar("PLANE ALT ABOVE GROUND", "feet");
+            if (altAboveGnd == 0 && !Model.OnGround)
+                altAboveGnd = (int)SimConnect.ReadSimVar("PLANE ALT ABOVE GROUND MINUS CG", "feet");
 
             tlod = Model.MemoryAccess.GetTLOD();
             olod = Model.MemoryAccess.GetOLOD();

@@ -11,8 +11,8 @@
     <Authors>Fragtality</Authors>
     <Description>Another Adapative LOD Implementation based on muumimorko
 Work</Description>
-    <Copyright>Copyright © 2023</Copyright>
-    <Version>0.3.1</Version>
+    <Copyright>Copyright © 2024</Copyright>
+    <Version>0.3.2</Version>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -38,7 +38,7 @@ Work</Description>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="H.NotifyIcon.Wpf" Version="2.0.123" />
+    <PackageReference Include="H.NotifyIcon.Wpf" Version="2.0.124" />
     <PackageReference Include="Serilog" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>

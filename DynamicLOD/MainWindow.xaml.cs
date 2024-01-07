@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace DynamicLOD
             
             string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             assemblyVersion = assemblyVersion[0..assemblyVersion.LastIndexOf('.')];
-            Title += "  (" + assemblyVersion + ")";
+            Title += " (" + assemblyVersion + ")";
 
             FillIndices(dgTlodPairs);
             FillIndices(dgOlodPairs);
@@ -322,9 +323,13 @@ namespace DynamicLOD
             if (pairIndex == 0 && alt.Text != "0")
                 alt.Text = "0";
 
-            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod) && pairIndex < pairs.Count && agl >= 0 && lod >= serviceModel.SimMinLOD)
+            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod)
+                && pairIndex < pairs.Count && agl >= 0 && lod >= serviceModel.SimMinLOD)
             {
+                var oldPair = pairs[pairIndex];
                 pairs[pairIndex] = (agl, lod);
+                if (pairs.Count(pair => pair.Item1 == agl) > 1)
+                    pairs[pairIndex] = oldPair;
                 serviceModel.SavePairs();
             }
 
@@ -346,7 +351,9 @@ namespace DynamicLOD
 
         private void AddLodPair(ref int pairIndex, TextBox alt, TextBox value, List<(float, float)> pairs)
         {
-            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod) && agl >= 0 && lod >= serviceModel.SimMinLOD)
+            if (int.TryParse(alt.Text, CultureInfo.InvariantCulture, out int agl) && float.TryParse(value.Text, new RealInvariantFormat(value.Text), out float lod)
+                && agl >= 0 && lod >= serviceModel.SimMinLOD
+                && !pairs.Any(pair => pair.Item1 == agl))
             {
                 pairs.Add((agl, lod));
                 ServiceModel.SortTupleList(pairs);

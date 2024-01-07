@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,7 +22,15 @@ namespace Installer
 
             string assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             assemblyVersion = assemblyVersion.Substring(0, assemblyVersion.LastIndexOf('.'));
-            Title += "  (" + assemblyVersion + ")";
+            Title += " (" + assemblyVersion + ")";
+
+            if (Directory.Exists(Parameters.appDir))
+                btnInstall.Content = "Update!";
+            else
+            {
+                btnRemove.IsEnabled = false;
+                btnRemove.Visibility = Visibility.Hidden;
+            }
 
             messageQueue = new Queue<string>();
             worker = new InstallerWorker(messageQueue);
@@ -64,9 +73,9 @@ namespace Installer
         {
             if (!workerHasFinished)
             {
-                if (InstallerFunctions.GetProcessRunning("DynamicLOD"))
+                if (InstallerFunctions.GetProcessRunning(Parameters.appName))
                 {
-                    MessageBox.Show("Please stop DynamicLOD and try again.", "DynamicLOD is running!", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"Please stop {Parameters.appName} and try again.", $"{Parameters.appName} is running!", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -74,12 +83,43 @@ namespace Installer
                 radio_Click(null, null);
 
                 btnInstall.IsEnabled = false;
+                btnRemove.Visibility = Visibility.Hidden;
+                btnRemove.IsEnabled = false;
                 timer.Start();
                 Task.Run(worker.Run);
             }
             else
             {
                 App.Current.Shutdown();
+            }
+        }
+
+        private void btnRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (InstallerFunctions.GetProcessRunning(Parameters.appName))
+            {
+                MessageBox.Show($"Please stop {Parameters.appName} and try again.", $"{Parameters.appName} is running!", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            else
+            {
+                btnRemove.IsEnabled = false;
+                btnInstall.IsEnabled = false;
+
+                try
+                {
+                    Directory.Delete(Parameters.appDir, true);
+                    InstallerFunctions.AutoStartExe(true);
+                    InstallerFunctions.AutoStartFsuipc(true);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Exception '{ex.GetType()}' during Uninstall", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                lblResult.Content = "REMOVED successfully!";
+                lblResult.Foreground = new SolidColorBrush(Colors.DarkGreen);
             }
         }
 
@@ -96,6 +136,8 @@ namespace Installer
                 worker.CfgAutoStart = AutoStart.FSUIPC;
             else if (radioExe.IsChecked == true)
                 worker.CfgAutoStart = AutoStart.EXE;
+            else if (radioRemove.IsChecked == true)
+                worker.CfgAutoStart = AutoStart.REMOVE;
         }
     }
 }
