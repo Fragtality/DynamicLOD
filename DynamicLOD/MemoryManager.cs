@@ -10,6 +10,8 @@ namespace DynamicLOD
         private long addrOLOD;
         private long addrTLOD_VR;
         private long addrOLOD_VR;
+        private long addrVrMode1;
+        private long addrVrMode2;
 
         public MemoryManager(ServiceModel model)
         {
@@ -29,6 +31,12 @@ namespace DynamicLOD
                 Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address OLOD VR: 0x{addrOLOD_VR:X} / {addrOLOD_VR}");
                 addrOLOD = addrTLOD + Model.OffsetPointerOlod;
                 Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address OLOD: 0x{addrOLOD:X} / {addrOLOD}");
+
+                moduleBase = MemoryInterface.GetModuleAddress(Model.SimBinary);
+                addrVrMode1 = moduleBase + 0x765B694;
+                Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address VrMode1: 0x{addrVrMode1:X} / {addrVrMode1}");
+                addrVrMode2 = moduleBase + 0x765B704;
+                Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address VrMode2: 0x{addrVrMode2:X} / {addrVrMode2}");
             }
             catch (Exception ex)
             {
@@ -36,11 +44,25 @@ namespace DynamicLOD
             }
         }
 
+        public bool IsVrModeActive()
+        {
+            try
+            {
+                return MemoryInterface.ReadMemory<int>(addrVrMode1) == 1 && MemoryInterface.ReadMemory<int>(addrVrMode2) == 1;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Error, "MemoryManager:IsVrModeActive", $"Exception {ex}: {ex.Message}");
+            }
+
+            return false;
+        }
+
         public float GetTLOD_PC()
         {
             try
             {
-                return MemoryInterface.ReadMemory<float>(addrTLOD) * 100.0f;
+                return (float)Math.Round(MemoryInterface.ReadMemory<float>(addrTLOD) * 100.0f);
             }
             catch (Exception ex)
             {
@@ -61,7 +83,7 @@ namespace DynamicLOD
         {
             try
             {
-                return MemoryInterface.ReadMemory<float>(addrTLOD_VR) * 100.0f;
+                return (float)Math.Round(MemoryInterface.ReadMemory<float>(addrTLOD_VR) * 100.0f);
             }
             catch (Exception ex)
             {
@@ -75,7 +97,7 @@ namespace DynamicLOD
         {
             try
             {
-                return MemoryInterface.ReadMemory<float>(addrOLOD) * 100.0f;
+                return (float)Math.Round(MemoryInterface.ReadMemory<float>(addrOLOD) * 100.0f);
             }
             catch (Exception ex)
             {
@@ -97,7 +119,7 @@ namespace DynamicLOD
         {
             try
             {
-                return MemoryInterface.ReadMemory<float>(addrOLOD_VR) * 100.0f;
+                return (float)Math.Round(MemoryInterface.ReadMemory<float>(addrOLOD_VR) * 100.0f);
             }
             catch (Exception ex)
             {

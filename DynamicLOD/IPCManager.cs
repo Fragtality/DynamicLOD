@@ -53,6 +53,8 @@ namespace DynamicLOD
             if (!IsSimRunning())
                 return false;
 
+            Thread.Sleep(waitDuration / 2);
+
             SimConnect = new MobiSimConnect();
             bool mobiRequested = SimConnect.Connect();
 
@@ -61,7 +63,7 @@ namespace DynamicLOD
                 do
                 {
                     Logger.Log(LogLevel.Information, "IPCManager:WaitForConnection", $"Connection not established - waiting {waitDuration / 1000}s for Retry");
-                    Thread.Sleep(waitDuration / 2);
+                    Thread.Sleep(waitDuration);
                     if (!mobiRequested)
                         mobiRequested = SimConnect.Connect();
                 }

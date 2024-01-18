@@ -23,6 +23,7 @@ namespace DynamicLOD
         public int SelectedProfile { get; set; } = 0;
         public bool[] ProfilesVR = new bool[maxProfile];
         public bool IsVR { get { return ProfilesVR[SelectedProfile]; } }
+        public bool IsVrModeActive { get { return MemoryAccess != null && MemoryAccess.IsVrModeActive(); } }
         public List<List<(float, float)>> PairsTLOD { get; set; }
         public int CurrentPairTLOD;
         public List<List<(float, float)>> PairsOLOD { get; set; }

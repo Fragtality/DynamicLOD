@@ -52,9 +52,7 @@ namespace DynamicLOD
 
             Model.VerticalTrend = VerticalAverage();
 
-            altAboveGnd = (int)SimConnect.ReadSimVar("PLANE ALT ABOVE GROUND", "feet");
-            if (altAboveGnd == 0 && !Model.OnGround)
-                altAboveGnd = (int)SimConnect.ReadSimVar("PLANE ALT ABOVE GROUND MINUS CG", "feet");
+            altAboveGnd = SimConnect.AltAboveGround(Model.OnGround);
 
             tlod = Model.MemoryAccess.GetTLOD();
             olod = Model.MemoryAccess.GetOLOD();
@@ -63,10 +61,10 @@ namespace DynamicLOD
         public void RunTick()
         {
             UpdateVariables();
-            if (FirstStart)
+            if (FirstStart || Model.ForceEvaluation)
             {
                 fpsModeTicks++;
-                if (fpsModeTicks > 2)
+                if (fpsModeTicks > 2 || Model.ForceEvaluation)
                     FindPairs();
                 return;
             }
@@ -97,20 +95,22 @@ namespace DynamicLOD
             else if (!Model.UseTargetFPS && Model.fpsMode)
                 ResetFPSMode();
 
-            EvaluateLodPairByHeight(ref Model.CurrentPairTLOD, Model.PairsTLOD[Model.SelectedProfile]);
-            float newlod = EvaluateLodValue(Model.PairsTLOD[Model.SelectedProfile], Model.CurrentPairTLOD, tlod_dec);
+            int newIndex = EvaluateLodPairByHeight(Model.CurrentPairTLOD, Model.PairsTLOD[Model.SelectedProfile]);
+            float newlod = EvaluateLodValue(Model.PairsTLOD[Model.SelectedProfile], newIndex, tlod_dec);
             if (tlod != newlod)
             {
-                Logger.Log(LogLevel.Information, "LODController:RunTick", $"Setting TLOD {newlod}");
+                Logger.Log(LogLevel.Information, "LODController:RunTick", $"Setting TLOD {newlod} (Index #{newIndex})");
                 Model.MemoryAccess.SetTLOD(newlod);
+                Model.CurrentPairTLOD = newIndex;
             }
 
-            EvaluateLodPairByHeight(ref Model.CurrentPairOLOD, Model.PairsOLOD[Model.SelectedProfile]);
-            newlod = EvaluateLodValue(Model.PairsOLOD[Model.SelectedProfile], Model.CurrentPairOLOD, olod_dec);
+            newIndex = EvaluateLodPairByHeight(Model.CurrentPairOLOD, Model.PairsOLOD[Model.SelectedProfile]);
+            newlod = EvaluateLodValue(Model.PairsOLOD[Model.SelectedProfile], newIndex, olod_dec);
             if (olod != newlod)
             {
-                Logger.Log(LogLevel.Information, "LODController:RunTick", $"Setting OLOD {newlod}");
+                Logger.Log(LogLevel.Information, "LODController:RunTick", $"Setting OLOD {newlod} (Index #{newIndex})");
                 Model.MemoryAccess.SetOLOD(newlod);
+                Model.CurrentPairOLOD = newIndex;
             }
 
             Model.ForceEvaluation = false;
@@ -133,24 +133,29 @@ namespace DynamicLOD
             olod_dec = 0;
         }
 
-        private float EvaluateLodPairByHeight(ref int index, List<(float, float)> lodPairs)
+        private int EvaluateLodPairByHeight(int index, List<(float, float)> lodPairs)
         {
-            float result = -1.0f;
             Logger.Log(LogLevel.Verbose, "LODController:EvaluateLodByHeight", $"VerticalAverage {VerticalAverage()}");
             if ((VerticalAverage() > 0 || Model.ForceEvaluation) && index + 1 < lodPairs.Count && altAboveGnd > lodPairs[index + 1].Item1)
             {
                 index++;
                 Logger.Log(LogLevel.Information, "LODController:EvaluateLodByHeight", $"Higher Pair found (altAboveGnd: {altAboveGnd} | index: {index} | lod: {lodPairs[index].Item2})");
-                return lodPairs[index].Item2;
+                return index;
             }
             else if ((VerticalAverage() < 0 || Model.ForceEvaluation) && altAboveGnd < lodPairs[index].Item1 && index - 1 >= 0)
             {
                 index--;
                 Logger.Log(LogLevel.Information, "LODController:EvaluateLodByHeight", $"Lower Pair found (altAboveGnd: {altAboveGnd} | index: {index} | lod: {lodPairs[index].Item2})");
-                return lodPairs[index].Item2;
+                return index;
+            }
+            else if ((VerticalAverage() == 0 || Model.ForceEvaluation) && altAboveGnd > lodPairs[^1].Item1)
+            {
+                index = lodPairs.Count - 1;
+                Logger.Log(LogLevel.Information, "LODController:EvaluateLodByHeight", $"Highest Pair not selected while in Cruise (altAboveGnd: {altAboveGnd} | index: {index} | lod: {lodPairs[index].Item2})");
+                return index;
             }
 
-            return result;
+            return index;
         }
 
         public int VerticalAverage()
@@ -209,6 +214,7 @@ namespace DynamicLOD
                 }
             }
 
+            Model.ForceEvaluation = false;
             Model.fpsMode = false;
             fpsModeTicks = 0;
             tlod_dec = 0;

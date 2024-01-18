@@ -110,8 +110,16 @@ namespace DynamicLOD
 
             if (serviceModel.MemoryAccess != null)
             {
-                lblSimTLOD.Content = serviceModel.MemoryAccess.GetTLOD().ToString("F0") + " / " + serviceModel.MemoryAccess.GetTLOD_VR().ToString("F0");
-                lblSimOLOD.Content = serviceModel.MemoryAccess.GetOLOD().ToString("F0") + " / " + serviceModel.MemoryAccess.GetOLOD_VR().ToString("F0");
+                if (!serviceModel.IsVrModeActive)
+                {
+                    lblSimTLOD.Content = "<" + serviceModel.MemoryAccess.GetTLOD().ToString("F0") + "> / " + serviceModel.MemoryAccess.GetTLOD_VR().ToString("F0");
+                    lblSimOLOD.Content = "<" + serviceModel.MemoryAccess.GetOLOD().ToString("F0") + "> / " + serviceModel.MemoryAccess.GetOLOD_VR().ToString("F0");
+                }
+                else
+                {
+                    lblSimTLOD.Content = serviceModel.MemoryAccess.GetTLOD().ToString("F0") + " / <" + serviceModel.MemoryAccess.GetTLOD_VR().ToString("F0") + ">";
+                    lblSimOLOD.Content = serviceModel.MemoryAccess.GetOLOD().ToString("F0") + " / <" + serviceModel.MemoryAccess.GetOLOD_VR().ToString("F0") + ">";
+                }
             }
             else
             {
@@ -148,7 +156,11 @@ namespace DynamicLOD
             if (IPCManager.SimConnect != null && IPCManager.SimConnect.IsConnected)
             {
                 var simConnect = IPCManager.SimConnect;
-                lblPlaneAGL.Content = simConnect.ReadSimVar("PLANE ALT ABOVE GROUND", "feet").ToString("F0");
+                if (!serviceModel.OnGround)
+                    lblPlaneAGL.Content = simConnect.AltAboveGround(false).ToString("F0");
+                else
+                    lblPlaneAGL.Content = "0";
+
                 lblPlaneVS.Content = (simConnect.ReadSimVar("VERTICAL SPEED", "feet per second") * 60.0f).ToString("F0");
                 if (serviceModel.OnGround)
                     lblVSTrend.Content = "Ground";

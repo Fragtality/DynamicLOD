@@ -455,5 +455,14 @@ namespace DynamicLOD
             SendClientWasmCmd($"MF.SimVars.Set.{code}");
             SendClientWasmDummyCmd();
         }
+
+        public int AltAboveGround(bool onGround)
+        {
+            int alt = (int)ReadSimVar("PLANE ALT ABOVE GROUND", "feet");
+            if (alt == 0 && onGround)
+                alt = (int)ReadSimVar("PLANE ALT ABOVE GROUND MINUS CG", "feet");
+
+            return alt;
+        }
     }
 }
