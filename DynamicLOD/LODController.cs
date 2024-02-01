@@ -58,9 +58,56 @@ namespace DynamicLOD
             olod = Model.MemoryAccess.GetOLOD();
         }
 
+        private void CheckVrMode()
+        {
+            if (Model.AutoSwitchVr && Model.IsVrModeActive != Model.IsVrProfile)
+            {
+                Logger.Log(LogLevel.Debug, "LODController:UpdateVariables", $"Auto-Switch for VR needed");
+                if (Model.IsVrModeActive)
+                {
+                    for (int i = 0; i < Model.ProfilesVR.Length; i++)
+                    {
+                        if (Model.ProfilesVR[i])
+                        {
+                            Model.LastProfile = Model.SelectedProfile;
+                            Model.SelectedProfile = i;
+                            Model.ForceEvaluation = true;
+                            Model.ProfileSelectionChanged = true;
+                            Logger.Log(LogLevel.Information, "LODController:UpdateVariables", $"Changing to Profile '{i}' for VR");
+                        }
+                    }
+                }
+                else
+                {
+                    if (!Model.ProfilesVR[Model.LastProfile])
+                    {
+                        Model.SelectedProfile = Model.LastProfile;
+                        Model.ForceEvaluation = true;
+                        Model.ProfileSelectionChanged = true;
+                        Logger.Log(LogLevel.Information, "LODController:UpdateVariables", $"Changing to last Profile '{Model.LastProfile}' for Non-VR");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < Model.ProfilesVR.Length; i++)
+                        {
+                            if (!Model.ProfilesVR[i])
+                            {
+                                Model.LastProfile = Model.SelectedProfile;
+                                Model.SelectedProfile = i;
+                                Model.ForceEvaluation = true;
+                                Model.ProfileSelectionChanged = true;
+                                Logger.Log(LogLevel.Information, "LODController:UpdateVariables", $"Changing to Profile '{Model.LastProfile}' for Non-VR");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         public void RunTick()
         {
             UpdateVariables();
+            CheckVrMode();
             if (FirstStart || Model.ForceEvaluation)
             {
                 fpsModeTicks++;

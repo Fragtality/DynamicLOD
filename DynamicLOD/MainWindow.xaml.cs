@@ -53,7 +53,7 @@ namespace DynamicLOD
             cbProfile.SelectedIndex = serviceModel.SelectedProfile;
             dgTlodPairs.ItemsSource = serviceModel.PairsTLOD[serviceModel.SelectedProfile].ToDictionary(x => x.Item1, x => x.Item2);
             dgOlodPairs.ItemsSource = serviceModel.PairsOLOD[serviceModel.SelectedProfile].ToDictionary(x => x.Item1, x => x.Item2);
-            chkProfileIsVr.IsChecked = serviceModel.IsVR;
+            chkProfileIsVr.IsChecked = serviceModel.IsVrProfile;
             txtTargetFPS.Text = Convert.ToString(serviceModel.TargetFPS, CultureInfo.CurrentUICulture);
             txtDecreaseTlod.Text = Convert.ToString(serviceModel.DecreaseTLOD, CultureInfo.CurrentUICulture);
             txtDecreaseOlod.Text = Convert.ToString(serviceModel.DecreaseOLOD, CultureInfo.CurrentUICulture);
@@ -112,13 +112,13 @@ namespace DynamicLOD
             {
                 if (!serviceModel.IsVrModeActive)
                 {
-                    lblSimTLOD.Content = "<" + serviceModel.MemoryAccess.GetTLOD().ToString("F0") + "> / " + serviceModel.MemoryAccess.GetTLOD_VR().ToString("F0");
-                    lblSimOLOD.Content = "<" + serviceModel.MemoryAccess.GetOLOD().ToString("F0") + "> / " + serviceModel.MemoryAccess.GetOLOD_VR().ToString("F0");
+                    lblSimTLOD.Content = "<" + serviceModel.MemoryAccess.GetTLOD_PC().ToString("F0") + "> / " + serviceModel.MemoryAccess.GetTLOD_VR().ToString("F0");
+                    lblSimOLOD.Content = "<" + serviceModel.MemoryAccess.GetOLOD_PC().ToString("F0") + "> / " + serviceModel.MemoryAccess.GetOLOD_VR().ToString("F0");
                 }
                 else
                 {
-                    lblSimTLOD.Content = serviceModel.MemoryAccess.GetTLOD().ToString("F0") + " / <" + serviceModel.MemoryAccess.GetTLOD_VR().ToString("F0") + ">";
-                    lblSimOLOD.Content = serviceModel.MemoryAccess.GetOLOD().ToString("F0") + " / <" + serviceModel.MemoryAccess.GetOLOD_VR().ToString("F0") + ">";
+                    lblSimTLOD.Content = serviceModel.MemoryAccess.GetTLOD_PC().ToString("F0") + " / <" + serviceModel.MemoryAccess.GetTLOD_VR().ToString("F0") + ">";
+                    lblSimOLOD.Content = serviceModel.MemoryAccess.GetOLOD_PC().ToString("F0") + " / <" + serviceModel.MemoryAccess.GetOLOD_VR().ToString("F0") + ">";
                 }
             }
             else
@@ -187,6 +187,12 @@ namespace DynamicLOD
 
         protected void OnTick(object sender, EventArgs e)
         {
+            if (serviceModel.ProfileSelectionChanged)
+            {
+                LoadSettings();
+                serviceModel.ProfileSelectionChanged = false;
+            }
+            
             UpdateStatus();
             UpdateLiveValues();
             UpdateAircraftValues();
