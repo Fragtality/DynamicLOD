@@ -90,7 +90,7 @@ namespace DynamicLOD
             OffsetPointerTlod = Convert.ToInt64(ConfigurationFile.GetSetting("offsetPointerTlod", "0xC"), 16);
             OffsetPointerTlodVr = Convert.ToInt64(ConfigurationFile.GetSetting("offsetPointerTlodVr", "0x114"), 16);
             OffsetPointerOlod = Convert.ToInt64(ConfigurationFile.GetSetting("offsetPointerOlod", "0xC"), 16);
-            OffsetVrMode = Convert.ToInt64(ConfigurationFile.GetSetting("offsetVrMode", "-0xC"), 16);
+            OffsetVrMode = Convert.ToInt64(ConfigurationFile.GetSetting("offsetVrMode", "-28"));
             SimMinLOD = Convert.ToSingle(ConfigurationFile.GetSetting("simMinLod", "10"), new RealInvariantFormat(ConfigurationFile.GetSetting("simMinLod", "10")));
             AutoSwitchVr = Convert.ToBoolean(ConfigurationFile.GetSetting("autoSwitchVr", "true"));
 

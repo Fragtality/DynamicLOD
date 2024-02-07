@@ -31,7 +31,6 @@ namespace DynamicLOD
                 addrOLOD = addrTLOD + Model.OffsetPointerOlod;
                 Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address OLOD: 0x{addrOLOD:X} / {addrOLOD}");
 
-                moduleBase = MemoryInterface.GetModuleAddress(Model.SimBinary);
                 addrVrMode = addrTLOD + Model.OffsetVrMode;
                 Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address VrMode: 0x{addrVrMode:X} / {addrVrMode}");
             }

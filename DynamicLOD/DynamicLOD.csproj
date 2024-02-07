@@ -12,7 +12,7 @@
     <Description>Another Adapative LOD Implementation based on muumimorko
 Work</Description>
     <Copyright>Copyright © 2024</Copyright>
-    <Version>0.3.2</Version>
+    <Version>0.3.3</Version>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
   </PropertyGroup>
 
