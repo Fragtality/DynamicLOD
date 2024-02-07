@@ -10,8 +10,7 @@ namespace DynamicLOD
         private long addrOLOD;
         private long addrTLOD_VR;
         private long addrOLOD_VR;
-        private long addrVrMode1;
-        private long addrVrMode2;
+        private long addrVrMode;
 
         public MemoryManager(ServiceModel model)
         {
@@ -33,10 +32,8 @@ namespace DynamicLOD
                 Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address OLOD: 0x{addrOLOD:X} / {addrOLOD}");
 
                 moduleBase = MemoryInterface.GetModuleAddress(Model.SimBinary);
-                addrVrMode1 = moduleBase + Model.OffsetVr1;
-                Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address VrMode1: 0x{addrVrMode1:X} / {addrVrMode1}");
-                addrVrMode2 = moduleBase + Model.OffsetVr2;
-                Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address VrMode2: 0x{addrVrMode2:X} / {addrVrMode2}");
+                addrVrMode = addrTLOD + Model.OffsetVrMode;
+                Logger.Log(LogLevel.Debug, "MemoryManager:MemoryManager", $"Address VrMode: 0x{addrVrMode:X} / {addrVrMode}");
             }
             catch (Exception ex)
             {
@@ -48,7 +45,7 @@ namespace DynamicLOD
         {
             try
             {
-                return MemoryInterface.ReadMemory<int>(addrVrMode1) == 1 && MemoryInterface.ReadMemory<int>(addrVrMode2) == 1;
+                return MemoryInterface.ReadMemory<int>(addrVrMode) == 1;
             }
             catch (Exception ex)
             {

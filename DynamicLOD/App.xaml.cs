@@ -66,7 +66,8 @@ namespace DynamicLOD
 
         protected override void OnExit(ExitEventArgs e)
         {
-            Model.CancellationRequested = true;
+            if (Model != null)
+                Model.CancellationRequested = true;
             notifyIcon?.Dispose();
             base.OnExit(e);
 

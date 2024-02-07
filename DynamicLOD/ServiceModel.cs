@@ -53,8 +53,7 @@ namespace DynamicLOD
         public long OffsetPointerTlod { get; set; }
         public long OffsetPointerTlodVr { get; set; }
         public long OffsetPointerOlod { get; set; }
-        public long OffsetVr1 { get; set; }
-        public long OffsetVr2 { get; set; }
+        public long OffsetVrMode { get; set; }
         public bool AutoSwitchVr { get; set; }
 
         protected ConfigurationFile ConfigurationFile = new();
@@ -91,8 +90,7 @@ namespace DynamicLOD
             OffsetPointerTlod = Convert.ToInt64(ConfigurationFile.GetSetting("offsetPointerTlod", "0xC"), 16);
             OffsetPointerTlodVr = Convert.ToInt64(ConfigurationFile.GetSetting("offsetPointerTlodVr", "0x114"), 16);
             OffsetPointerOlod = Convert.ToInt64(ConfigurationFile.GetSetting("offsetPointerOlod", "0xC"), 16);
-            OffsetVr1 = Convert.ToInt64(ConfigurationFile.GetSetting("offsetVr1", "0x765B694"), 16);
-            OffsetVr2 = Convert.ToInt64(ConfigurationFile.GetSetting("offsetVr2", "0x765B704"), 16);
+            OffsetVrMode = Convert.ToInt64(ConfigurationFile.GetSetting("offsetVrMode", "-0xC"), 16);
             SimMinLOD = Convert.ToSingle(ConfigurationFile.GetSetting("simMinLod", "10"), new RealInvariantFormat(ConfigurationFile.GetSetting("simMinLod", "10")));
             AutoSwitchVr = Convert.ToBoolean(ConfigurationFile.GetSetting("autoSwitchVr", "true"));
 
