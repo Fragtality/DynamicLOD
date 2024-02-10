@@ -47,11 +47,13 @@ Some Notes:
 - Clicking on the SysTray Icon opens the Window (again).
 - Runnning as Admin NOT required (BUT: It is required to be run under the same User/Elevation as MSFS).
 - You can have (exactly) three different Sets/Profiles for the AGL/LOD Pairs to switch between (manually but dynamically).
-- For VR Support you have to mark the Profile with "VR Profile".
-- There is no automatic Detection if VR is active: you have to manually switch between Profiles.
+- VR Mode is supported
+  - The App will automatically switch to the *first* Profile marked with the Checkbox 'VR Profile' in VR-Mode
+  - When leaving VR-Mode the App will either switch to the last used Profile or to the *first* non-VR Profile (= 'VR Profile' not checked)
+  - The automatic Switching can only be disabled in the Config File ('autoSwitchVr')
 - The first Pair with AGL 0 can not be deleted. The AGL can not be changed. Only the xLOD.
 - Additional Pairs can be added at any AGL and xLOD desired. Pairs will always be sorted by AGL.
-- Plus is Add, Minus is Remove, S is Set (Change). Remove and Set require to double-click the Pair first.
+- Plus is Add, Minus is Remove, S is Set (Change). Remove and Set require to **double-click** the Pair first.
 - A Pair is selected (and the configured xLOD applied) when the current AGL is above the configured AGL. If the current AGL goes below the configured AGL, the next lower Pair will be selected.
 - A new Pair is only selected in Accordance to the VS Trend - i.e. a lower Pair won't be selected if you're actually Climbing (only the next higer)
 - **Less is more**:
