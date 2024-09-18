@@ -327,13 +327,7 @@ namespace Installer
             {
                 string regVersion = (string)Registry.GetValue(Parameters.ipcRegPath, Parameters.ipcRegValue, null);
                 if (!string.IsNullOrWhiteSpace(regVersion))
-                {
-                    regVersion = regVersion.Substring(1);
-                    int index = regVersion.IndexOf("(beta)");
-                    if (index > 0)
-                        regVersion = regVersion.Substring(0, index).TrimEnd();
-                    result = CheckVersion(regVersion, ipcVersion, true, false);
-                }
+                    result = CheckVersion(regVersion, VersionCompare.GREATER_EQUAL, ipcVersion, out bool compareable) && compareable;
             }
             catch (Exception e)
             {
@@ -342,61 +336,68 @@ namespace Installer
 
             return result;
         }
-        public static bool CheckVersion(string versionInstalled, string versionRequired, bool majorEqual, bool ignoreBuild)
+
+        public static readonly Regex rxNumberMatch = new Regex(@"\D*(\d+)\D*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public static string[] CleanNumbers(string[] versions)
         {
-            bool majorMatch = false;
-            bool minorMatch = false;
-            bool patchMatch = false;
-
-            string[] strInst = versionInstalled.Split('.');
-            string[] strReq = versionRequired.Split('.');
-            int vInst;
-            int vReq;
-            bool prevWasEqual = false;
-
-            for (int i = 0; i < strInst.Length; i++)
+            for (int i = 0; i < versions.Length; i++)
             {
-                if (Regex.IsMatch(strInst[i], @"(\d+)\D"))
-                    strInst[i] = strInst[i].Substring(0, strInst[i].Length - 1);
-            }
-
-            //Major
-            if (int.TryParse(strInst[0], out vInst) && int.TryParse(strReq[0], out vReq))
-            {
-                if (majorEqual)
-                    majorMatch = vInst == vReq;
+                var match = rxNumberMatch.Match(versions[i]);
+                if (match?.Groups?.Count == 2 && !string.IsNullOrWhiteSpace(match?.Groups[1]?.Value))
+                    versions[i] = match.Groups[1].Value;
                 else
-                    majorMatch = vInst >= vReq;
-
-                prevWasEqual = vInst == vReq;
+                    return null;
             }
 
-            //Minor
-            if (int.TryParse(strInst[1], out vInst) && int.TryParse(strReq[1], out vReq))
+            return versions;
+        }
+
+        public enum VersionCompare
+        {
+            EQUAL = 1,
+            LESS,
+            LESS_EQUAL,
+            GREATER,
+            GREATER_EQUAL
+        }
+
+        public static bool CheckVersion(string leftVersion, VersionCompare comparison, string rightVersion, out bool compareable, int digits = 3)
+        {
+            compareable = false;
+
+            if (string.IsNullOrWhiteSpace(leftVersion) || string.IsNullOrWhiteSpace(rightVersion))
+                return false;
+
+            string[] leftParts = leftVersion.Split('.');
+            string[] rightParts = rightVersion.Split('.');
+            if (leftParts.Length < digits || rightParts.Length < digits)
+                return false;
+
+            leftParts = CleanNumbers(leftParts);
+            rightParts = CleanNumbers(rightParts);
+            if (leftParts == null || rightParts == null)
+                return false;
+
+            leftVersion = string.Join(".", leftParts);
+            rightVersion = string.Join(".", rightParts);
+            if (!Version.TryParse(leftVersion, out Version left) || !Version.TryParse(rightVersion, out Version right))
+                return false;
+
+            compareable = true;
+            switch (comparison)
             {
-                if (prevWasEqual)
-                    minorMatch = vInst >= vReq;
-                else
-                    minorMatch = true;
-
-                prevWasEqual = vInst == vReq;
+                case VersionCompare.LESS:
+                    return left < right;
+                case VersionCompare.LESS_EQUAL:
+                    return left <= right;
+                case VersionCompare.GREATER:
+                    return left > right;
+                case VersionCompare.GREATER_EQUAL:
+                    return left >= right;
+                default:
+                    return left == right;
             }
-
-            //Patch
-            if (!ignoreBuild)
-            {
-                if (int.TryParse(strInst[2], out vInst) && int.TryParse(strReq[2], out vReq))
-                {
-                    if (prevWasEqual)
-                        patchMatch = vInst >= vReq;
-                    else
-                        patchMatch = true;
-                }
-            }
-            else
-                patchMatch = true;
-
-            return majorMatch && minorMatch && patchMatch;
         }
 
         public static bool CheckPackageVersion(string packagePath, string packageName, string version)
@@ -412,8 +413,8 @@ namespace Installer
                         if (Parameters.wasmRegex.IsMatch(line))
                         {
                             var matches = Parameters.wasmRegex.Matches(line);
-                            if (matches.Count == 1 && matches[0].Groups.Count >= 2)
-                                return CheckVersion(matches[0].Groups[1].Value, version, false, false);
+                            if (matches?.Count == 1 && matches[0]?.Groups?.Count >= 2)
+                                return CheckVersion(matches[0]?.Groups[1]?.Value, VersionCompare.GREATER_EQUAL, version, out bool compareable) && compareable;
                         }
                     }
                 }
@@ -512,18 +513,15 @@ namespace Installer
             {
                 bool installedDesktop = false;
 
-                string output = RunCommand("dotnet --list-runtimes");
+                string[] output = RunCommand("dotnet --list-runtimes").Split(Environment.NewLine.ToCharArray());
 
-                var matches = Parameters.netDesktop.Matches(output);
-                foreach (Match match in matches)
+                foreach (var line in output)
                 {
-                    if (!match.Success || match.Groups.Count != 5)
-                        continue;
-                    if (!StringEqual(match.Groups[2].Value, Parameters.netMajor))
-                        continue;
-                    if ((StringEqual(match.Groups[3].Value, Parameters.netMinor) && StringGreaterEqual(match.Groups[4].Value, Parameters.netPatch))
-                        || StringGreater(match.Groups[3].Value, Parameters.netMinor))
-                        installedDesktop = true;
+                    var match = Parameters.netDesktop.Match(line);
+                    if (match?.Groups?.Count == 2 && !string.IsNullOrWhiteSpace(match?.Groups[1]?.Value))
+                        installedDesktop = CheckVersion(match.Groups[1].Value, VersionCompare.GREATER_EQUAL, Parameters.netVersion, out bool compareable) && compareable;
+                    if (installedDesktop)
+                        break;
                 }
 
                 return installedDesktop;

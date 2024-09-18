@@ -95,8 +95,8 @@ namespace DynamicLOD
             AutoSwitchVr = Convert.ToBoolean(ConfigurationFile.GetSetting("autoSwitchVr", "true"));
 
             SelectedProfile = Convert.ToInt32(ConfigurationFile.GetSetting("selectedProfile", "0"));
-            PairsTLOD = new();
-            PairsOLOD = new();
+            PairsTLOD = [];
+            PairsOLOD = [];
             ProfilesVR = new bool[maxProfile];
 
             for (int i = 0; i < maxProfile; i++)
@@ -120,7 +120,7 @@ namespace DynamicLOD
 
         public static List<(float, float)> LoadPairs(string settings)
         {
-            List<(float, float)> pairsList = new();
+            List<(float, float)> pairsList = [];
 
             string[] strPairs = settings.Split('|');
             int alt;

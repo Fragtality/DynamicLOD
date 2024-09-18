@@ -11,3 +11,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Performance", "CA1822:Member als statisch markieren", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.NotifyIconViewModel.ExitApplication")]
 [assembly: SuppressMessage("Style", "IDE1006:Benennungsstile")]
 [assembly: SuppressMessage("Usage", "CA2211:Nicht konstante Felder dürfen nicht sichtbar sein")]
+[assembly: SuppressMessage("Performance", "CA1864:Methode \"Dictionary.TryAdd(TKey, TValue)\" bevorzugen", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.MobiSimConnect.SubscribeVariable(System.String)")]

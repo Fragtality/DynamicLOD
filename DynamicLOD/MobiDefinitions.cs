@@ -46,17 +46,11 @@ namespace DynamicLOD
     //    GROUP0
     //};
 
-    public class SimVar
+    public class SimVar(uint iD, float data = 0.0f)
     {
-        public UInt32 ID { get; set; }
+        public UInt32 ID { get; set; } = iD;
         public String Name { get; set; }
-        public float Data { get; set; }
-
-        public SimVar(uint iD, float data = 0.0f)
-        {
-            ID = iD;
-            Data = data;
-        }
+        public float Data { get; set; } = data;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

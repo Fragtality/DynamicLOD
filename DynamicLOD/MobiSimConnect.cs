@@ -38,8 +38,8 @@ namespace DynamicLOD
 
         protected uint nextID = 1;
         protected const int reorderTreshold = 150;
-        protected Dictionary<string, uint> addressToIndex = new();
-        protected Dictionary<uint, float> simVars = new();
+        protected Dictionary<string, uint> addressToIndex = [];
+        protected Dictionary<uint, float> simVars = [];
 
         public MobiSimConnect()
         {
@@ -219,7 +219,6 @@ namespace DynamicLOD
                         CreateDataAreaClientChannel();
                         isMobiConnected = true;
                         SendClientWasmCmd("MF.SimVars.Clear");
-                        SendClientWasmCmd($"MF.Config.MAX_VARS_PER_FRAME.Set.{ServiceModel.MfLvarsPerFrame}");
                         Logger.Log(LogLevel.Information, "MobiSimConnect:SimConnect_OnClientData", $"MobiFlight WASM Client Connection opened");
                     }
                 }

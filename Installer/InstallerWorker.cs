@@ -40,7 +40,7 @@ namespace Installer
 
         protected void InstallDotNet()
         {
-            messageList.Enqueue("\nChecking .NET 7 Desktop Runtime ...");
+            messageList.Enqueue("\nChecking .NET 8 Desktop Runtime ...");
 
             if (InstallerFunctions.CheckDotNet())
                 messageList.Enqueue("Runtime already installed!");

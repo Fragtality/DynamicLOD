@@ -3,15 +3,10 @@ using System.Threading;
 
 namespace DynamicLOD
 {
-    public class ServiceController
+    public class ServiceController(ServiceModel model)
     {
-        protected ServiceModel Model;
+        protected ServiceModel Model = model;
         protected int Interval = 1000;
-
-        public ServiceController(ServiceModel model)
-        {
-            this.Model = model;
-        }
 
         public void Run()
         {
