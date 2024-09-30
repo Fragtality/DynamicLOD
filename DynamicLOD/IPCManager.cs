@@ -7,13 +7,14 @@ namespace DynamicLOD
     public static class IPCManager
     {
         public static readonly int waitDuration = 30000;
+        public static bool simWasStarted = false;
 
         public static MobiSimConnect SimConnect { get; set; } = null;
 
         public static bool WaitForSimulator(ServiceModel model)
         {
             bool simRunning = IsSimRunning();
-            if (!simRunning && model.WaitForConnect)
+            if (!simRunning && !simWasStarted && model.WaitForConnect)
             {
                 do
                 {
@@ -45,7 +46,10 @@ namespace DynamicLOD
 
         public static bool IsSimRunning()
         {
-            return IsProcessRunning("FlightSimulator");
+            bool result = IsProcessRunning("FlightSimulator");
+            if (result)
+                simWasStarted = true;
+            return result;
         }
         
         public static bool WaitForConnection(ServiceModel model)
@@ -58,7 +62,7 @@ namespace DynamicLOD
             SimConnect = new MobiSimConnect();
             bool mobiRequested = SimConnect.Connect();
 
-            if (!SimConnect.IsConnected)
+            if (!SimConnect.IsConnected && IsSimRunning())
             {
                 do
                 {
@@ -69,7 +73,7 @@ namespace DynamicLOD
                 }
                 while (!SimConnect.IsConnected && IsSimRunning() && !model.CancellationRequested);
 
-                return SimConnect.IsConnected;
+                return SimConnect.IsConnected && IsSimRunning();
             }
             else
             {
@@ -92,7 +96,7 @@ namespace DynamicLOD
                 isReady = IsCamReady();
             }
 
-            if (!isReady)
+            if (!isReady || !IsSimRunning())
             {
                 Logger.Log(LogLevel.Error, "IPCManager:WaitForSessionReady", $"SimConnect or Simulator not available - aborting");
                 return false;
@@ -103,10 +107,7 @@ namespace DynamicLOD
 
         public static bool IsCamReady()
         {
-            float value = SimConnect.ReadSimVar("CAMERA STATE", "Enum");
-            bool parkState = SimConnect.ReadSimVar("PLANE IN PARKING STATE", "Bool") == 1;
-
-            return value >= 2 && value <= 5 && !parkState;
+            return SimConnect.ReadSimVar("CAMERA STATE", "Enum") < 11;
         }
 
         public static void CloseSafe()
