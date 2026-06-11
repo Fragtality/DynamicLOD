@@ -5,8 +5,6 @@
 
 # CUSTOM
 Releases/
-AppPackage.zip
-Build.ps1
 CopyToMSFS.ps1
 desktop.ini
 build.lck
