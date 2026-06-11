@@ -1,0 +1,92 @@
+{
+  "OpenAppWindowOnStart": false,
+  "UiRefreshInterval": 500,
+  "TickInterval": 500,
+  "FeetPerSecondThreshold": 8,
+  "TrendAvgPoints": 5,
+  "MinTlodValue": 50,
+  "MaxTlodValue": 400,
+  "MinOlodValue": 50,
+  "MaxOlodValue": 200,
+  "VrModeDetection": true,
+  "Force24Variant": 0,
+  "SimPointerDefinitions": {
+    "MSFS2020_STEAM": {
+      "SimVariant": 1,
+      "SimProcess": "FlightSimulator",
+      "SimModule": "WwiseLibPCx64P.dll",
+      "OffsetModuleBase": 4924264,
+      "OffsetPointer": 976,
+      "OffsetPointerTlod": 12,
+      "OffsetPointerTlodVr": 276,
+      "OffsetPointerOlod": 24,
+      "OffsetPointerOlodVr": 288
+    },
+    "MSFS2024_MSSTORE": {
+      "SimVariant": 4,
+      "SimProcess": "FlightSimulator2024",
+      "SimModule": "FlightSimulator2024.exe",
+      "OffsetModuleBase": 172414248,
+      "OffsetPointer": 0,
+      "OffsetPointerTlod": 1148,
+      "OffsetPointerTlodVr": 1476,
+      "OffsetPointerOlod": 1168,
+      "OffsetPointerOlodVr": 1496
+    },
+    "MSFS2024_STEAM": {
+      "SimVariant": 3,
+      "SimProcess": "FlightSimulator2024",
+      "SimModule": "FlightSimulator2024.exe",
+      "OffsetModuleBase": 175785224,
+      "OffsetPointer": 0,
+      "OffsetPointerTlod": 1148,
+      "OffsetPointerTlodVr": 1476,
+      "OffsetPointerOlod": 1168,
+      "OffsetPointerOlodVr": 1496
+    }
+  },
+  "SettingProfiles": [
+    {
+      "Name": "default",
+      "SimObjectMatches": [],
+      "IsVR": false,
+      "TlodReset": 100,
+      "OlodReset": 100,
+      "TlodLevels": {
+        "0": 100,
+        "500": 125,
+        "2000": 150,
+        "7500": 175,
+        "15000": 200,
+        "20000": 250
+      },
+      "OlodLevels": {
+        "0": 100,
+        "500": 125,
+        "5000": 150,
+        "10000": 175
+      }
+    }
+  ],
+  "ConfigVersion": 1,
+  "LogInterval": 3,
+  "SizeLimit": 10485760,
+  "LogCount": 3,
+  "LogTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] [{SourceContext}] {Message} {NewLine}",
+  "LogLevel": 1,
+  "IdBase": 500,
+  "RetryDelay": 30000,
+  "StaleTimeout": 3000,
+  "CheckInterval": 500,
+  "InputEventsMaxAttempts": 3,
+  "InputEventScanDelay": 2500,
+  "VerboseLogging": false,
+  "SizeVariables": 5000,
+  "SizeEvents": 5000,
+  "SizeInputEvents": 5000,
+  "BinaryMsfs2020": "FlightSimulator",
+  "BinaryMsfs2024": "FlightSimulator2024",
+  "AppWindowRestorePosition": true,
+  "WindowPosTop": 0,
+  "WindowPosLeft": 0
+}

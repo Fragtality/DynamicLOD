@@ -1,272 +1,203 @@
-﻿using System;
+﻿using CFIT.AppFramework.ResourceStores;
+using CFIT.AppLogger;
+using CFIT.SimConnectLib.SimResources;
+using CFIT.SimConnectLib.SimVars;
+using DynamicLOD.AppConfig;
+using DynamicLOD.Memory;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DynamicLOD
 {
-    public class LODController
+    public class LodController
     {
-        private MobiSimConnect SimConnect;
-        private ServiceModel Model;
+        public virtual MemoryManager MemoryManager => AppService.Instance?.MemoryManager;
+        public virtual Config Config => AppService.Instance?.Config;
+        public virtual SettingProfile SettingProfile => AppService.Instance?.SettingProfile;
+        public virtual bool IsReady => MemoryManager?.IsInitialized == true;
+        protected virtual bool IsFrozen => AppService.Instance.IsFrozen;
+        public virtual bool ProfileWasSet { get; set; } = false;
+        protected virtual SimStore SimStore => AppService.Instance.SimStore;
+        public virtual ISimResourceSubscription SubVerticalSpeed { get; protected set; }
+        public virtual double VerticalSpeed { get; protected set; } = 0.0;
+        public virtual ISimResourceSubscription SubAlt { get; protected set; }
+        public virtual double Altitude { get; protected set; } = 0.0;
+        public virtual ISimResourceSubscription SubAltCg { get; protected set; }
+        public virtual double AltitudeCg { get; protected set; } = 0.0;
+        public virtual ISimResourceSubscription SubOnGround { get; protected set; }
+        public virtual bool IsOnGround { get; protected set; } = false;
+        public virtual int Tlod { get; protected set; } = 0;
+        public virtual int TlodVr { get; protected set; } = 0;
+        public virtual int Olod { get; protected set; } = 0;
+        public virtual int OlodVr { get; protected set; } = 0;
+        public virtual int VerticalTrend { get; protected set; } = 0;
+        public virtual int[] VerticalStats { get; protected set; }
+        public virtual int VerticalIndex { get; protected set; } = 0;
+        public virtual List<KeyValuePair<int, int>> TlodLevels { get; protected set; }
+        public virtual int CurrentTlodLevel { get; protected set; } = 0;
+        public virtual List<KeyValuePair<int, int>> OlodLevels { get; protected set; }
+        public virtual int CurrentOlodLevel { get; protected set; } = 0;
 
-        private int[] verticalStats = new int[5];
-        private int verticalIndex = 0;
-        private int altAboveGnd = 0;
-        private float tlod = 0;
-        private float tlod_dec = 0;
-        private float olod = 0;
-        private float olod_dec = 0;
-        public bool FirstStart { get; set; } = true;
-        private int fpsModeTicks = 0;
-
-        public LODController(ServiceModel model)
+        public LodController()
         {
-            Model = model;
-
-            SimConnect = IPCManager.SimConnect;
-            SimConnect.SubscribeSimVar("VERTICAL SPEED", "feet per second");
-            SimConnect.SubscribeSimVar("PLANE ALT ABOVE GROUND", "feet");
-            SimConnect.SubscribeSimVar("PLANE ALT ABOVE GROUND MINUS CG", "feet");
-            SimConnect.SubscribeSimVar("SIM ON GROUND", "Bool");
-            tlod = Model.MemoryAccess.GetTLOD();
-            olod = Model.MemoryAccess.GetOLOD();
-            Model.CurrentPairTLOD = 0;
-            Model.CurrentPairOLOD = 0;
-            Model.fpsMode = false;
+            VerticalStats = new int[Config.TrendAvgPoints];
+            SubVerticalSpeed = SimStore.AddVariable("VERTICAL SPEED", SimUnitType.FeetPerSecond);
+            SubAlt = SimStore.AddVariable("PLANE ALT ABOVE GROUND", SimUnitType.Feet);
+            SubAltCg = SimStore.AddVariable("PLANE ALT ABOVE GROUND MINUS CG", SimUnitType.Feet);
+            SubOnGround = SimStore.AddVariable("SIM ON GROUND", SimUnitType.Bool);
         }
 
-        private void UpdateVariables()
+        public virtual void Cleanup()
         {
-            float vs = SimConnect.ReadSimVar("VERTICAL SPEED", "feet per second");
-            Model.OnGround = SimConnect.ReadSimVar("SIM ON GROUND", "Bool") == 1.0f;
-            if (vs >= 8.0f)
-                verticalStats[verticalIndex] = 1;
-            else if (vs <= -8.0f)
-                verticalStats[verticalIndex] = -1;
-            else
-                verticalStats[verticalIndex] = 0;
-
-            verticalIndex++;
-            if (verticalIndex >= verticalStats.Length)
-                verticalIndex = 0;
-
-            Model.VerticalTrend = VerticalAverage();
-
-            altAboveGnd = SimConnect.AltAboveGround(Model.OnGround);
-
-            tlod = Model.MemoryAccess.GetTLOD();
-            olod = Model.MemoryAccess.GetOLOD();
-        }
-
-        private void CheckVrMode()
-        {
-            if (Model.AutoSwitchVr && Model.IsVrModeActive != Model.IsVrProfile)
+            if (MemoryManager.IsAttached && !AppService.Instance.SimConnect.QuitReceived)
             {
-                Logger.Log(LogLevel.Debug, "LODController:UpdateVariables", $"Auto-Switch for VR needed");
-                if (Model.IsVrModeActive)
-                {
-                    for (int i = 0; i < Model.ProfilesVR.Length; i++)
-                    {
-                        if (Model.ProfilesVR[i])
-                        {
-                            Model.LastProfile = Model.SelectedProfile;
-                            Model.SelectedProfile = i;
-                            Model.ForceEvaluation = true;
-                            Model.ProfileSelectionChanged = true;
-                            Logger.Log(LogLevel.Information, "LODController:UpdateVariables", $"Changing to Profile '{i}' for VR");
-                        }
-                    }
-                }
-                else
-                {
-                    if (!Model.ProfilesVR[Model.LastProfile])
-                    {
-                        Model.SelectedProfile = Model.LastProfile;
-                        Model.ForceEvaluation = true;
-                        Model.ProfileSelectionChanged = true;
-                        Logger.Log(LogLevel.Information, "LODController:UpdateVariables", $"Changing to last Profile '{Model.LastProfile}' for Non-VR");
-                    }
-                    else
-                    {
-                        for (int i = 0; i < Model.ProfilesVR.Length; i++)
-                        {
-                            if (!Model.ProfilesVR[i])
-                            {
-                                Model.LastProfile = Model.SelectedProfile;
-                                Model.SelectedProfile = i;
-                                Model.ForceEvaluation = true;
-                                Model.ProfileSelectionChanged = true;
-                                Logger.Log(LogLevel.Information, "LODController:UpdateVariables", $"Changing to Profile '{Model.LastProfile}' for Non-VR");
-                            }
-                        }
-                    }
-                }
+                MemoryManager.WriteLod(MemoryValueType.TLOD, SettingProfile.TlodReset);
+                MemoryManager.WriteLod(MemoryValueType.TLOD_VR, SettingProfile.TlodReset);
+                MemoryManager.WriteLod(MemoryValueType.OLOD, SettingProfile.OlodReset);
+                MemoryManager.WriteLod(MemoryValueType.OLOD_VR, SettingProfile.OlodReset);
+
+                SimStore.Remove("VERTICAL SPEED");
+                SimStore.Remove("PLANE ALT ABOVE GROUND");
+                SimStore.Remove("PLANE ALT ABOVE GROUND MINUS CG");
+                SimStore.Remove("SIM ON GROUND");
             }
         }
 
-        public void RunTick()
+        protected virtual void InitProfile()
         {
-            UpdateVariables();
-            CheckVrMode();
-            if (FirstStart || Model.ForceEvaluation)
+            TlodLevels = [.. SettingProfile.TlodLevels];
+            CurrentTlodLevel = 0;
+            OlodLevels = [.. SettingProfile.OlodLevels];
+            CurrentOlodLevel = 0;
+            CurrentTlodLevel = FindHighestLod(TlodLevels, "TLOD");
+            CurrentOlodLevel = FindHighestLod(OlodLevels, "OLOD");
+            UpdateLods();
+        }
+
+        public virtual async Task Run()
+        {
+            if (!MemoryManager.IsInitialized)
+                return;
+
+            await UpdateVariables();
+            if (IsFrozen || Altitude == 0)
+                return;
+
+            if (ProfileWasSet)
             {
-                fpsModeTicks++;
-                if (fpsModeTicks > 2 || Model.ForceEvaluation)
-                    FindPairs();
+                ProfileWasSet = false;
+                InitProfile();
+            }
+            else
+            {
+                CurrentTlodLevel = EvaluateLodByHeight(CurrentTlodLevel, TlodLevels, "TLOD");
+                CurrentOlodLevel = EvaluateLodByHeight(CurrentOlodLevel, OlodLevels, "OLOD");
+                UpdateLods();
+            }
+        }
+
+        protected virtual void UpdateLods()
+        {
+            if (!CheckVariables())
+            {
+                Logger.Error($"Cannot Update LODs - Memory Value Check failed");
                 return;
             }
 
-            if (Model.UseTargetFPS)
+
+            if (AppService.Instance.IsInVr)
             {
-                if (SimConnect.GetAverageFPS() < Model.TargetFPS && (Model.CurrentPairTLOD >= Model.TargetFPSIndex || (Model.CurrentPairOLOD >= Model.TargetFPSIndex)))
-                {
-                    if (!Model.fpsMode)
-                    {
-                        Logger.Log(LogLevel.Information, "LODController:RunTick", $"FPS Constraint active");
-                        Model.fpsMode = true;
-                        tlod_dec = Model.DecreaseTLOD;
-                        olod_dec = Model.DecreaseOLOD;
-                    }
-                }
-                else if (Model.fpsMode && (Model.CurrentPairTLOD < Model.TargetFPSIndex || Model.CurrentPairOLOD < Model.TargetFPSIndex))
-                {
-                    ResetFPSMode();
-                }
-                else if (SimConnect.GetAverageFPS() > Model.TargetFPS && Model.fpsMode)
-                {
-                    fpsModeTicks++;
-                    if (fpsModeTicks > Model.ConstraintTicks || Model.ForceEvaluation)
-                        ResetFPSMode();
-                }
+                if (Tlod != TlodLevels[CurrentTlodLevel].Value)
+                    MemoryManager.WriteLod(MemoryValueType.TLOD_VR, TlodLevels[CurrentTlodLevel].Value);
+                if (Olod != OlodLevels[CurrentOlodLevel].Value)
+                    MemoryManager.WriteLod(MemoryValueType.OLOD_VR, OlodLevels[CurrentOlodLevel].Value);
             }
-            else if (!Model.UseTargetFPS && Model.fpsMode)
-                ResetFPSMode();
-
-            int newIndex = EvaluateLodPairByHeight(Model.CurrentPairTLOD, Model.PairsTLOD[Model.SelectedProfile]);
-            float newlod = EvaluateLodValue(Model.PairsTLOD[Model.SelectedProfile], newIndex, tlod_dec);
-            if (tlod != newlod)
-            {
-                Logger.Log(LogLevel.Information, "LODController:RunTick", $"Setting TLOD {newlod} (Index #{newIndex})");
-                Model.MemoryAccess.SetTLOD(newlod);
-                Model.CurrentPairTLOD = newIndex;
-            }
-
-            newIndex = EvaluateLodPairByHeight(Model.CurrentPairOLOD, Model.PairsOLOD[Model.SelectedProfile]);
-            newlod = EvaluateLodValue(Model.PairsOLOD[Model.SelectedProfile], newIndex, olod_dec);
-            if (olod != newlod)
-            {
-                Logger.Log(LogLevel.Information, "LODController:RunTick", $"Setting OLOD {newlod} (Index #{newIndex})");
-                Model.MemoryAccess.SetOLOD(newlod);
-                Model.CurrentPairOLOD = newIndex;
-            }
-
-            Model.ForceEvaluation = false;
-        }
-
-        private float EvaluateLodValue(List<(float, float)> pairs, int currentPair, float decrement)
-        {
-            if (Model.UseTargetFPS)
-                return Math.Max(pairs[currentPair].Item2 - decrement, Math.Max(Model.MinLOD, Model.SimMinLOD));
             else
-                return Math.Max(pairs[currentPair].Item2, Model.SimMinLOD);
+            {
+                if (Tlod != TlodLevels[CurrentTlodLevel].Value)
+                    MemoryManager.WriteLod(MemoryValueType.TLOD, TlodLevels[CurrentTlodLevel].Value);
+                if (Olod != OlodLevels[CurrentOlodLevel].Value)
+                    MemoryManager.WriteLod(MemoryValueType.OLOD, OlodLevels[CurrentOlodLevel].Value);
+            }
         }
 
-        private void ResetFPSMode()
+        protected virtual bool CheckVariables()
         {
-            Logger.Log(LogLevel.Information, "LODController:RunTick", $"FPS Constraint lifted");
-            Model.fpsMode = false;
-            fpsModeTicks = 0;
-            tlod_dec = 0;
-            olod_dec = 0;
+            return Tlod != 0 && TlodVr != 0 && Olod != 0 && OlodVr != 0 &&
+                   Tlod < 1000 && TlodVr < 1000 && Olod < 1000 && OlodVr < 1000;
         }
 
-        private int EvaluateLodPairByHeight(int index, List<(float, float)> lodPairs)
+        protected virtual async Task UpdateVariables()
         {
-            Logger.Log(LogLevel.Verbose, "LODController:EvaluateLodByHeight", $"VerticalAverage {VerticalAverage()}");
-            if ((VerticalAverage() > 0 || Model.ForceEvaluation) && index + 1 < lodPairs.Count && altAboveGnd > lodPairs[index + 1].Item1)
+            Tlod = (int)(MemoryManager.ReadLod(MemoryValueType.TLOD) * 100.0f);
+            TlodVr = (int)(MemoryManager.ReadLod(MemoryValueType.TLOD_VR) * 100.0f);
+            Olod = (int)(MemoryManager.ReadLod(MemoryValueType.OLOD) * 100.0f);
+            OlodVr = (int)(MemoryManager.ReadLod(MemoryValueType.OLOD_VR) * 100.0f);
+
+            VerticalSpeed = SubVerticalSpeed?.GetNumber() ?? 0.0;
+            Altitude = SubAlt?.GetNumber() ?? 0.0;
+            AltitudeCg = SubAltCg?.GetNumber() ?? 0.0;
+            if (Altitude == 0.0 && AltitudeCg != 0.0)
+                Altitude = AltitudeCg;
+            IsOnGround = SubOnGround?.GetNumber() != 0.0;
+
+            if (VerticalSpeed >= Config.FeetPerSecondThreshold)
+                VerticalStats[VerticalIndex] = 1;
+            else if (VerticalSpeed <= Config.FeetPerSecondThreshold * -1.0)
+                VerticalStats[VerticalIndex] = -1;
+            else
+                VerticalStats[VerticalIndex] = 0;
+
+            VerticalIndex++;
+            if (VerticalIndex >= VerticalStats.Length)
+                VerticalIndex = 0;
+
+            VerticalTrend = VerticalStats.Sum();
+        }
+
+        protected virtual int FindHighestLod(List<KeyValuePair<int, int>> lodLevels, string lodText)
+        {
+            int index = -1;
+            foreach (var lodLevel in lodLevels)
             {
                 index++;
-                Logger.Log(LogLevel.Information, "LODController:EvaluateLodByHeight", $"Higher Pair found (altAboveGnd: {altAboveGnd} | index: {index} | lod: {lodPairs[index].Item2})");
+                if (Altitude < lodLevel.Key)
+                    return index;
+            }
+
+            Logger.Debug($"No highest {lodText} found");
+            return index;
+        }
+
+        protected virtual int EvaluateLodByHeight(int index, List<KeyValuePair<int, int>> lodLevels, string lodText)
+        {
+            if (IsOnGround && index != 0)
+            {
+                index = 0;
+                Logger.Information($"Lowest {lodText} Level not selected while on Ground (Altitude: {(int)Altitude} | IsOnGround: {IsOnGround} | index: {index} | lod: {lodLevels[index].Value})");
                 return index;
             }
-            else if ((VerticalAverage() < 0 || Model.ForceEvaluation) && altAboveGnd < lodPairs[index].Item1 && index - 1 >= 0)
+            else if (VerticalTrend > 0 && index + 1 < lodLevels.Count && Altitude > lodLevels[index + 1].Key)
+            {
+                index++;
+                Logger.Information($"Higher {lodText} Level found (Altitude: {(int)Altitude} | index: {index} | lod: {lodLevels[index].Value})");
+                return index;
+            }
+            else if (VerticalTrend < 0 && Altitude < lodLevels[index].Key && index - 1 >= 0)
             {
                 index--;
-                Logger.Log(LogLevel.Information, "LODController:EvaluateLodByHeight", $"Lower Pair found (altAboveGnd: {altAboveGnd} | index: {index} | lod: {lodPairs[index].Item2})");
+                Logger.Information($"Lower {lodText} Level found (Altitude: {(int)Altitude} | index: {index} | lod: {lodLevels[index].Value})");
                 return index;
             }
-            else if ((VerticalAverage() == 0 || Model.ForceEvaluation) && altAboveGnd > lodPairs[^1].Item1)
+            else if (VerticalTrend == 0 && Altitude > lodLevels[^1].Key && index != lodLevels.Count - 1)
             {
-                index = lodPairs.Count - 1;
-                Logger.Log(LogLevel.Information, "LODController:EvaluateLodByHeight", $"Highest Pair not selected while in Cruise (altAboveGnd: {altAboveGnd} | index: {index} | lod: {lodPairs[index].Item2})");
+                index = lodLevels.Count - 1;
+                Logger.Information($"Highest {lodText} Level not selected while in Cruise (Altitude: {(int)Altitude} | index: {index} | lod: {lodLevels[index].Value})");
                 return index;
             }
 
             return index;
-        }
-
-        public int VerticalAverage()
-        {
-            return verticalStats.Sum();
-        }
-
-        private void FindPairs()
-        {
-            Logger.Log(LogLevel.Information, "LODController:FindPairs", $"Finding Pairs (onGround: {Model.OnGround} | tlod: {tlod} | olod: {olod})");
-
-            if (!Model.OnGround)
-            {
-                int result = 0;
-                for (int i = 0; i < Model.PairsTLOD[Model.SelectedProfile].Count; i++)
-                {
-                    if (altAboveGnd > Model.PairsTLOD[Model.SelectedProfile][i].Item1)
-                        result = i;
-                }
-                Model.CurrentPairTLOD = result;
-                Logger.Log(LogLevel.Information, "LODController:FindPairs", $"TLOD Index {result}");
-                if (tlod != Model.PairsTLOD[Model.SelectedProfile][result].Item2)
-                {
-                    Logger.Log(LogLevel.Information, "LODController:FindPairs", $"Setting TLOD {Model.PairsTLOD[Model.SelectedProfile][result].Item2}");
-                    Model.MemoryAccess.SetTLOD(Model.PairsTLOD[Model.SelectedProfile][result].Item2);
-                }
-
-                result = 0;
-                for (int i = 0; i < Model.PairsOLOD[Model.SelectedProfile].Count; i++)
-                {
-                    if (altAboveGnd > Model.PairsOLOD[Model.SelectedProfile][i].Item1)
-                        result = i;
-                }
-                Model.CurrentPairOLOD = result;
-                Logger.Log(LogLevel.Information, "LODController:FindPairs", $"OLOD Index {result}");
-                if (olod != Model.PairsOLOD[Model.SelectedProfile][result].Item2)
-                {
-                    Logger.Log(LogLevel.Information, "LODController:FindPairs", $"Setting OLOD {Model.PairsOLOD[Model.SelectedProfile][result].Item2}");
-                    Model.MemoryAccess.SetOLOD(Model.PairsOLOD[Model.SelectedProfile][result].Item2);
-                }
-            }
-            else
-            {
-                int result = 0;
-                Model.CurrentPairTLOD = result;
-                if (tlod != Model.PairsTLOD[Model.SelectedProfile][result].Item2)
-                {
-                    Logger.Log(LogLevel.Information, "LODController:FindPairs", $"Setting TLOD {Model.PairsTLOD[Model.SelectedProfile][result].Item2}");
-                    Model.MemoryAccess.SetTLOD(Model.PairsTLOD[Model.SelectedProfile][result].Item2);
-                }
-                Model.CurrentPairOLOD = result;
-                if (olod != Model.PairsOLOD[Model.SelectedProfile][result].Item2)
-                {
-                    Logger.Log(LogLevel.Information, "LODController:FindPairs", $"Setting OLOD {Model.PairsOLOD[Model.SelectedProfile][result].Item2}");
-                    Model.MemoryAccess.SetOLOD(Model.PairsOLOD[Model.SelectedProfile][result].Item2);
-                }
-            }
-
-            Model.ForceEvaluation = false;
-            Model.fpsMode = false;
-            fpsModeTicks = 0;
-            tlod_dec = 0;
-            olod_dec = 0;
-            FirstStart = false;
         }
     }
 }

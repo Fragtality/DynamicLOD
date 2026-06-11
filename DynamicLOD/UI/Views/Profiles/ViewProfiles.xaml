@@ -1,0 +1,228 @@
+﻿<UserControl x:Class="DynamicLOD.UI.Views.Profiles.ViewProfiles"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DynamicLOD.UI.Views.Profiles"
+             xmlns:app="clr-namespace:DynamicLOD"
+             d:DataContext="{d:DesignInstance Type=local:ModelProfiles}"
+             mc:Ignorable="d" 
+             d:DesignHeight="1080" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../StyleResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="LabelProperty" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="FontWeight" Value="DemiBold" />
+                <Setter Property="FontSize" Value="12" />
+            </Style>
+            <Style x:Key="LabelValue" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="FontSize" Value="12" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid HorizontalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <GroupBox Grid.Column="0" Grid.Row="0" Style="{StaticResource GroupBoxDefault}" Padding="6">
+            <GroupBox.Header>LOD Profiles</GroupBox.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5.5,0,0,8">
+                    <Button Command="{Binding SetProfileCommand}" CommandParameter="{Binding SelectedProfile}" Margin="2,0,6,0" Style="{StaticResource BtnSquareSmall}" IsEnabled="{Binding SelectedModel.CanActivate}" IsHitTestVisible="{Binding SelectedModel.CanActivate}" ToolTip="Set as active Profile">
+                        <Image Source="../../Icons/play.png" Style="{StaticResource ImgSquareSmall}"/>
+                    </Button>
+                    <Button Command="{Binding ImportProfileCommand}" Margin="2,0,6,0" Style="{StaticResource BtnSquareSmall}" ToolTip="Import Profile Data from Clipboard">
+                        <Image Source="../../Icons/download.png" Style="{StaticResource ImgSquareSmall}"/>
+                    </Button>
+                    <Button Command="{Binding ExportProfileCommand}" Margin="2,0,6,0" Style="{StaticResource BtnSquareSmall}" ToolTip="Export Profile Data to Clipboard">
+                        <Image Source="../../Icons/upload.png" Style="{StaticResource ImgSquareSmall}"/>
+                    </Button>
+                    <Button Command="{Binding CloneProfileCommand}" Margin="2,0,6,0" Style="{StaticResource BtnSquareSmall}" ToolTip="Clone Profile">
+                        <Image Source="../../Icons/copy.png" Style="{StaticResource ImgSquareSmall}"/>
+                    </Button>
+                    <Button Name="ButtonRemoveProfile" Command="{Binding RemoveProfileCommand}" Margin="2,0,6,0" Style="{StaticResource BtnSquareSmall}" ToolTip="Remove Profile">
+                        <Image Source="../../Icons/remove.png" Style="{StaticResource ImgSquareSmall}"/>
+                    </Button>
+                </StackPanel>
+
+                <ListView Grid.Column="0" Grid.Row="1" Margin="6,5,12,6" MinWidth="339" MinHeight="192" MaxHeight="192" MaxWidth="339" HorizontalAlignment="Left" SelectionMode="Single" Name="SelectorProfiles" VerticalAlignment="Top"
+                          ToolTip="List of available Profiles.">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding}" Padding="0" MinHeight="24" VerticalContentAlignment="Center"/>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <Grid Grid.Column="1" Grid.Row="1" HorizontalAlignment="Right">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition MinWidth="120"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Column="0" Grid.Row="0" FontWeight="Medium" Style="{StaticResource ProfileDefault}"
+                           ToolTip="The (unique) Name to identify this Profile.">
+                        Profile Name:
+                    </Label>
+                    <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal">
+                        <TextBox Name="InputName" MinWidth="360" MaxWidth="360" HorizontalAlignment="Stretch" Style="{StaticResource ProfileInputText}"
+                                 ToolTip="The (unique) Name to identify this Profile."/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" Margin="0,6,0,0" HorizontalAlignment="Left" Visibility="{Binding IsAddVisible, Converter={StaticResource BoolVisibilityConverter}}">
+                        <Button Name="ButtonAddProfile" Style="{StaticResource BtnDefault}"
+                                MinHeight="24" MinWidth="100" Padding="2" FontWeight="DemiBold" HorizontalContentAlignment="Center"
+                                ToolTip="Add &amp; Save Profile">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                <Image Name="ImageAddProfile" Source="../../Icons/add.png" Style="{StaticResource ImgSquareSmall}" HorizontalAlignment="Left"/>
+                                <TextBlock Style="{StaticResource TextBlockDefault}" Padding="1" Margin="4,2,2,2" HorizontalAlignment="Right">Add Profile</TextBlock>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <Label Grid.Column="0" Grid.Row="2" Style="{StaticResource ProfileDefault}" Visibility="{Binding IsAddVisible, Converter={StaticResource BoolVisibilityInverseConverter}}"
+                           ToolTip="Load Profile when VR Mode is detected.">
+                        VR Profile:
+                    </Label>
+                    <CheckBox Grid.Column="1" Grid.Row="2" Name="CheckboxVrMode" IsEnabled="{Binding ViewProfileSelector.HasSelection}" Style="{StaticResource ProfileCheckBox}" VerticalContentAlignment="Center" Margin="0,12,0,6" Visibility="{Binding IsAddVisible, Converter={StaticResource BoolVisibilityInverseConverter}}"
+                              ToolTip="Load Profile when VR Mode is detected."/>
+
+                    <Label Grid.Column="0" Grid.Row="3" Style="{StaticResource ProfileDefault}" VerticalAlignment="Top" ToolTip="Define on which Aircrafts this Profile should be loaded.">
+                        SimObject Matches:
+                    </Label>
+                    <ListView Name="SelectorMatches" Grid.Column="1" Grid.Row="3" ItemsSource="{Binding MatchingCollection}" IsHitTestVisible="{Binding IsEditAllowed}" Margin="0,8,0,0" MinHeight="96" MinWidth="360" MaxWidth="360" HorizontalAlignment="Left"
+                              ToolTip="Strings/Text to check against the SimObject Path if they are contained.&#x0a;The Profile and their Matches are evaluated at Session Start to determine which Profile is loaded.&#x0a;Evaluation stops when the first Match is found.">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Padding="0" MinHeight="20" VerticalContentAlignment="Center" Content="{Binding}"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    
+                    <StackPanel Grid.Column="1" Grid.Row="4" Orientation="Horizontal" Margin="0,6,0,6" MinHeight="24">
+                        <TextBox Style="{StaticResource TextBoxLeft}" IsHitTestVisible="{Binding IsEditAllowed}" MinWidth="300" MaxWidth="300" Margin="0,0,6,0" MinHeight="24" Name="InputMatchString"
+                                 ToolTip="The Match String - the Text to search for."/>
+                        <Button Name="ButtonAddMatch" Margin="0,0,6,0" IsHitTestVisible="{Binding IsEditAllowed}" IsEnabled="{Binding IsEditAllowed}" Style="{StaticResource BtnSquareSmall}" ToolTip="Add/Update Profile Match">
+                            <Image Name="ImageAddMatching" Source="../../Icons/add.png" Style="{StaticResource ImgSquareSmall}"/>
+                        </Button>
+                        <Button Name="ButtonRemoveMatch" IsHitTestVisible="{Binding IsEditAllowed}" Style="{StaticResource BtnSquareSmall}" ToolTip="Remove Profile Match">
+                            <Image Source="../../Icons/remove.png" Style="{StaticResource ImgSquareSmall}"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Grid.Column="0" Grid.Row="1" Style="{StaticResource GroupBoxDefault}" Padding="6">
+            <GroupBox.Header>Profile LOD Levels</GroupBox.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                    <TextBlock Style="{StaticResource TextBlockDefault}" Margin="6,0,6,0" ToolTip="Value to reset TLOD to when the Session ends or App is exited.">
+                        TLOD Reset Value:
+                    </TextBlock>
+                    <TextBox Name="InputTlodReset" Style="{StaticResource TextBoxCentered}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" Margin="6">
+                    <TextBlock Style="{StaticResource TextBlockDefault}" Margin="0,0,0,4" FontWeight="DemiBold">
+                        TLOD Levels:
+                    </TextBlock>
+                    <ListView MinWidth="339" MinHeight="180" MaxHeight="180" MaxWidth="339" HorizontalAlignment="Left" SelectionMode="Single" Name="SelectorTlodLevels" VerticalAlignment="Top"
+                              ToolTip="LOD Levels for Terrain LOD.&#x0a;All Entries are sorted by Altitude and the Altitude must be unique.&#x0a;The first Entry (lowest Altitude) will be used on Ground.">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Content="{Binding}" Padding="0" MinHeight="24" VerticalContentAlignment="Center"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+
+                <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Horizontal" Margin="6,0,0,6" MinHeight="24" VerticalAlignment="Top">
+                    <TextBlock Style="{StaticResource TextBlockDefault}" Margin="0,0,6,0">TLOD Value:</TextBlock>
+                    <TextBox Style="{StaticResource TextBoxCentered}" IsHitTestVisible="{Binding IsEditAllowed}" Margin="0,0,6,0" MinHeight="24" Name="InputTlodValue" ToolTip="TLOD Value set at that Altitude."/>
+                    <TextBlock Style="{StaticResource TextBlockDefault}" Margin="12,0,6,0">Altitude (AGL):</TextBlock>
+                    <TextBox Style="{StaticResource TextBoxCentered}" IsHitTestVisible="{Binding IsEditAllowed}" Margin="0,0,6,0" MinHeight="24" Name="InputTlodAlt" ToolTip="Altitude above Ground to set the TLOD Value."/>                    
+                    <Button Name="ButtonAddTlod" Margin="13.5,0,6,0" Style="{StaticResource BtnSquareSmall}" ToolTip="Add/Update TLOD Level">
+                        <Image Name="ImageAddTlod" Source="../../Icons/add.png" Style="{StaticResource ImgSquareSmall}"/>
+                    </Button>
+                    <Button Name="ButtonRemoveTlod" IsHitTestVisible="{Binding IsEditAllowed}" Style="{StaticResource BtnSquareSmall}" ToolTip="Remove TLOD Level">
+                        <Image Source="../../Icons/remove.png" Style="{StaticResource ImgSquareSmall}"/>
+                    </Button>
+                </StackPanel>
+
+
+                <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                    <TextBlock Style="{StaticResource TextBlockDefault}" Margin="6,0,6,0" ToolTip="Value to reset OLOD to when the Session ends or App is exited.">
+                        OLOD Reset Value:
+                    </TextBlock>
+                    <TextBox Name="InputOlodReset" Style="{StaticResource TextBoxCentered}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" Margin="6">
+                    <TextBlock Style="{StaticResource TextBlockDefault}" Margin="0,0,0,4" FontWeight="DemiBold">
+                        OLOD Levels:
+                    </TextBlock>
+                    <ListView MinWidth="339" MinHeight="180" MaxHeight="180" MaxWidth="339" HorizontalAlignment="Left" SelectionMode="Single" Name="SelectorOlodLevels" VerticalAlignment="Top"
+                              ToolTip="LOD Levels for Object LOD.&#x0a;All Entries are sorted by Altitude and the Altitude must be unique.&#x0a;The first Entry (lowest Altitude) will be used on Ground.">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Content="{Binding}" Padding="0" MinHeight="24" VerticalContentAlignment="Center"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Horizontal" Margin="6,0,0,6" MinHeight="24" VerticalAlignment="Top">
+                    <TextBlock Style="{StaticResource TextBlockDefault}" Margin="0,0,6,0">OLOD Value:</TextBlock>
+                    <TextBox Style="{StaticResource TextBoxCentered}" IsHitTestVisible="{Binding IsEditAllowed}" Margin="0,0,6,0" MinHeight="24" Name="InputOlodValue" ToolTip="OLOD Value set at that Altitude."/>
+                    <TextBlock Style="{StaticResource TextBlockDefault}" Margin="12,0,6,0">Altitude (AGL):</TextBlock>
+                    <TextBox Style="{StaticResource TextBoxCentered}" IsHitTestVisible="{Binding IsEditAllowed}" Margin="0,0,6,0" MinHeight="24" Name="InputOlodAlt" ToolTip="Altitude above Ground to set the OLOD Value."/>
+                    <Button Name="ButtonAddOlod" Margin="13.5,0,6,0" Style="{StaticResource BtnSquareSmall}" ToolTip="Add/Update OLOD Level">
+                        <Image Name="ImageAddOlod" Source="../../Icons/add.png" Style="{StaticResource ImgSquareSmall}"/>
+                    </Button>
+                    <Button Name="ButtonRemoveOlod" IsHitTestVisible="{Binding IsEditAllowed}" Style="{StaticResource BtnSquareSmall}" ToolTip="Remove OLOD Level">
+                        <Image Source="../../Icons/remove.png" Style="{StaticResource ImgSquareSmall}"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>

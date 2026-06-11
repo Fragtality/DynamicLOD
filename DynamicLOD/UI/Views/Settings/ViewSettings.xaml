@@ -1,0 +1,106 @@
+﻿<UserControl x:Class="DynamicLOD.UI.Views.Settings.ViewSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DynamicLOD.UI.Views.Settings"
+             d:DataContext="{d:DesignInstance Type=local:ModelSettings}"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../StyleResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid HorizontalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Margin="14,0,8,0" MaxWidth="620" TextWrapping="WrapWithOverflow" HorizontalAlignment="Left">
+            <Italic>
+                The Settings will only apply after App Restart.
+            </Italic>
+        </TextBlock>
+
+        <GroupBox Grid.Column="0" Grid.Row="1" Style="{StaticResource GroupBoxDefault}">
+            <GroupBox.Header>UI</GroupBox.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" MinWidth="196"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Column="0" Grid.Row="0" Margin="6" Style="{StaticResource TextBlockDefault}" ToolTip="Open the UI when the App is started.">
+                    Open UI on Start:
+                </TextBlock>
+                <CheckBox Grid.Column="1" Grid.Row="0" IsChecked="{Binding OpenAppWindowOnStart}" Style="{StaticResource CheckBoxSettingItem}" ToolTip="Open the UI when the App is started."/>
+
+                <TextBlock Grid.Column="0" Grid.Row="1" Margin="6" Style="{StaticResource TextBlockDefault}" ToolTip="The App will restore its last Position on your Screen(s) when started (regardless if the UI is opened).">
+                    Save Window Position:
+                </TextBlock>
+                <CheckBox Grid.Column="1" Grid.Row="1" IsChecked="{Binding AppWindowRestorePosition}" Style="{StaticResource CheckBoxSettingItem}" ToolTip="The App will restore its last Position on your Screen(s) when started (regardless if the UI is opened)."/>
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Grid.Column="0" Grid.Row="2" Style="{StaticResource GroupBoxDefault}">
+            <GroupBox.Header>LOD Control</GroupBox.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" MinWidth="196"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Column="0" Grid.Row="0" Margin="6" Style="{StaticResource TextBlockDefault}" ToolTip="The Threshold in Feet per Second at which the Data Point is considered climbing or descending.">
+                    VS Threshold:
+                </TextBlock>
+                <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Style="{StaticResource SettingItemPanel}"
+                            ToolTip="The Threshold in Feet per Second at which the Data Point is considered climbing or descending.">
+                    <TextBox Name="InputVsThreshold" Style="{StaticResource TextBoxCentered}"/>
+                    <TextBlock Margin="4,0,0,0" Style="{StaticResource TextBlockDefault}">feet per sec</TextBlock>
+                </StackPanel>
+
+                <TextBlock Grid.Column="0" Grid.Row="1" Margin="6" Style="{StaticResource TextBlockDefault}" ToolTip="The Number of Data Points to calculate the Average respectively overall Trend (Climb, Descent or Cruise).">
+                    Trend Avg. Points:
+                </TextBlock>
+                <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" Style="{StaticResource SettingItemPanel}"
+                            ToolTip="The Number of Data Points to calculate the Average respectively overall Trend (Climb, Descent or Cruise).">
+                    <TextBox Name="InputTrendPoints" Style="{StaticResource TextBoxCentered}"/>
+                </StackPanel>
+
+
+                <TextBlock Grid.Column="0" Grid.Row="2" Margin="6" Style="{StaticResource TextBlockDefault}" ToolTip="The App will try to detect the VR Mode automatically.&#x0a;Disable this Options in Case of false-positives.">
+                    VR Mode Detection:
+                </TextBlock>
+                <CheckBox Grid.Column="1" Grid.Row="2" IsChecked="{Binding VrModeDetection}" Style="{StaticResource CheckBoxSettingItem}" ToolTip="The App will try to detect the VR Mode automatically.&#x0a;Disable this Options in Case of false-positives."/>
+
+                <TextBlock Grid.Column="0" Grid.Row="3" Margin="6" Style="{StaticResource TextBlockDefault}" ToolTip="Select the Edition (Steam vs. MS Store) of MS2024 used if automatic Detection fails.&#x0a;Automatic Detection checks for Existence of the Config Path of that Edition and fails if both Editions are installed.">
+                    MS2024 Edition:
+                </TextBlock>
+                <ComboBox Grid.Column="1" Grid.Row="3" SelectedValue="{Binding Force24Variant}" ItemsSource="{Binding Force24VariantOptions}" Margin="6" MinWidth="164" SelectedValuePath="Key" DisplayMemberPath="Value" Style="{StaticResource ComboBoxDefault}"
+                          ToolTip="Select the Edition (Steam vs. MS Store) of MS2024 used if automatic Detection fails.&#x0a;Automatic Detection checks for Existence of the Config Path of that Edition and fails if both Editions are installed.">
+                </ComboBox>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>
+
+    

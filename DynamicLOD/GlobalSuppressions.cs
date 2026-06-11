@@ -5,10 +5,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Style", "IDE0044:Modifizierer \"readonly\" hinzufügen")]
-[assembly: SuppressMessage("Performance", "CA1822:Member als statisch markieren", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.MobiSimConnect.SimConnect_OnException(Microsoft.FlightSimulator.SimConnect.SimConnect,Microsoft.FlightSimulator.SimConnect.SIMCONNECT_RECV_EXCEPTION)")]
-[assembly: SuppressMessage("Interoperability", "SYSLIB1054:Verwenden Sie \\\"LibraryImportAttribute\\\" anstelle von \\\"DllImportAttribute\\\", um P/Invoke-Marshallingcode zur Kompilierzeit zu generieren.")]
-[assembly: SuppressMessage("Performance", "CA1822:Member als statisch markieren", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.NotifyIconViewModel.ExitApplication")]
-[assembly: SuppressMessage("Style", "IDE1006:Benennungsstile")]
-[assembly: SuppressMessage("Usage", "CA2211:Nicht konstante Felder dürfen nicht sichtbar sein")]
-[assembly: SuppressMessage("Performance", "CA1864:Methode \"Dictionary.TryAdd(TKey, TValue)\" bevorzugen", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.MobiSimConnect.SubscribeVariable(System.String)")]
+[assembly: SuppressMessage("Interoperability", "SYSLIB1054:Verwenden Sie \\\"LibraryImportAttribute\\\" anstelle von \\\"DllImportAttribute\\\", um P/Invoke-Marshallingcode zur Kompilierzeit zu generieren.", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.Memory.NativeMethods.OpenProcess(System.Int32,System.Boolean,System.Int32)~System.IntPtr")]
+[assembly: SuppressMessage("Interoperability", "SYSLIB1054:Verwenden Sie \\\"LibraryImportAttribute\\\" anstelle von \\\"DllImportAttribute\\\", um P/Invoke-Marshallingcode zur Kompilierzeit zu generieren.", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.Memory.NativeMethods.NtWriteVirtualMemory(System.Int32,System.Int64,System.Byte[],System.Int32,System.Int32@)~System.IntPtr")]
+[assembly: SuppressMessage("Interoperability", "SYSLIB1054:Verwenden Sie \\\"LibraryImportAttribute\\\" anstelle von \\\"DllImportAttribute\\\", um P/Invoke-Marshallingcode zur Kompilierzeit zu generieren.", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.Memory.NativeMethods.NtReadVirtualMemory(System.Int32,System.Int64,System.Byte[],System.Int32,System.Int32@)~System.Boolean")]
+[assembly: SuppressMessage("Interoperability", "SYSLIB1054:Verwenden Sie \\\"LibraryImportAttribute\\\" anstelle von \\\"DllImportAttribute\\\", um P/Invoke-Marshallingcode zur Kompilierzeit zu generieren.", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.Memory.NativeMethods.CloseHandle(System.IntPtr)~System.Boolean")]
+[assembly: SuppressMessage("Style", "IDE0041:\"Ist NULL\"-Prüfung verwenden", Justification = "<Ausstehend>", Scope = "member", Target = "~M:DynamicLOD.UI.Views.Monitor.ModelMonitor.UpdateBoolState(System.String,System.String,System.Boolean,System.Boolean)")]

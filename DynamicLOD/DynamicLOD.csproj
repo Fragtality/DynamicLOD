@@ -2,68 +2,106 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
-    <Nullable>disable</Nullable>
+    <TargetFramework>net10.0-windows10.0.17763.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Nullable>annotations</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <StartupObject>DynamicLOD.App</StartupObject>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <NuGetAuditMode>all</NuGetAuditMode>
     <PlatformTarget>x64</PlatformTarget>
+    <StartupObject>DynamicLOD.DynamicLOD</StartupObject>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>0.4.0</Version>
+    <Title>$(AssemblyName)</Title>
     <Authors>Fragtality</Authors>
-    <Description>Another Adapative LOD Implementation based on muumimorko
-Work</Description>
-    <Copyright>Copyright © 2024</Copyright>
-    <Version>0.3.5</Version>
-    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
-	<WindowsSdkPackageVersion>10.0.17763.41</WindowsSdkPackageVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>embedded</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>embedded</DebugType>
+    <Company>Fragtality</Company>
+    <ApplicationIcon>UI\Icons\AppIcon.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="icon.ico" />
+    <None Remove="UI\Icons\add.png" />
+    <None Remove="UI\Icons\AppIconUpdate.ico" />
+    <None Remove="UI\Icons\copy.png" />
+    <None Remove="UI\Icons\download.png" />
+    <None Remove="UI\Icons\edit.png" />
+    <None Remove="UI\Icons\monitor.png" />
+    <None Remove="UI\Icons\play.png" />
+    <None Remove="UI\Icons\profiles.png" />
+    <None Remove="UI\Icons\remove.png" />
+    <None Remove="UI\Icons\settings.png" />
+    <None Remove="UI\Icons\upload.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="icon.ico" />
+    <PackageReference Include="CFIT.AppFramework" Version="2026.162.13.2819" />
+    <PackageReference Include="CFIT.AppLogger" Version="2026.162.13.2773" />
+    <PackageReference Include="CFIT.AppTools" Version="2026.162.13.2782" />
+    <PackageReference Include="CFIT.SimConnectLib" Version="2026.162.13.2807" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="H.GeneratedIcons.System.Drawing" Version="2.4.1" />
+    <PackageReference Include="H.NotifyIcon" Version="2.4.1" />
+    <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
+    <PackageReference Include="Serilog" Version="4.3.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <EmbeddedResource Include="icon.ico" />
+    <EmbeddedResource Include="UI\Icons\add.png" />
+    <EmbeddedResource Include="UI\Icons\AppIcon.ico" />
+    <EmbeddedResource Include="UI\Icons\AppIconUpdate.ico" />
+    <EmbeddedResource Include="UI\Icons\edit.png" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-    <PackageReference Include="H.NotifyIcon.Wpf" Version="2.1.3" />
-    <PackageReference Include="Serilog" Version="4.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <Reference Include="Microsoft.FlightSimulator.SimConnect">
       <HintPath>Microsoft.FlightSimulator.SimConnect.dll</HintPath>
+	  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Reference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Resource Include="UI\Icons\copy.png" />
+    <Resource Include="UI\Icons\download.png" />
+    <Resource Include="UI\Icons\monitor.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="UI\Icons\play.png" />
+    <Resource Include="UI\Icons\profiles.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="UI\Icons\remove.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="UI\Icons\settings.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="UI\Icons\upload.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="DynamicLOD.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <Content Update="Microsoft.FlightSimulator.SimConnect.dll">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Microsoft.FlightSimulator.SimConnect.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="SimConnect.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="powershell -ExecutionPolicy Unrestricted -file &quot;$(ProjectDir)CopyToMSFS.ps1&quot; $(ConfigurationName)" />
+  
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="pwsh -ExecutionPolicy Unrestricted -file &quot;$(ProjectDir)..\NuPreBuild.ps1&quot; $(SolutionDir) $(ProjectDir) &quot;DynamicLOD&quot; $(Configuration) &quot;CFIT.AppLogger&quot; &quot;CFIT.AppTools&quot; &quot;CFIT.SimConnectLib&quot; &quot;CFIT.AppFramework&quot;&#xD;&#xA;pwsh -ExecutionPolicy Unrestricted -file &quot;$(ProjectDir)CreateTimestamp.ps1&quot; $(SolutionDir) $(ProjectDir) &quot;DynamicLOD&quot; &quot;Installer\Payload&quot;" />
   </Target>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="pwsh -ExecutionPolicy Unrestricted -file &quot;$(ProjectDir)BuildApp.ps1&quot; $(Configuration) $(SolutionDir) $(ProjectDir) &quot;DynamicLOD&quot; &quot;AppConfig.json&quot;" />
+  </Target>
 </Project>
