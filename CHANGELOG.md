@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.4.1
+
+### App
+- Fixed Memory Locations
+- Added App Update Icon
+- Updated SimConnect SDK
+- Updated Libraries
+
+### Installer
+- Set .NET 10.0.10 as Target
+
+<br/><br/>
 ## v0.4.0
 
 ### App
