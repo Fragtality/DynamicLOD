@@ -5,7 +5,7 @@ namespace DynamicLOD.AppConfig
 {
     public class Definition : ProductDefinitionBase
     {
-        public override int BuildConfigVersion { get; } = 1;
+        public override int BuildConfigVersion { get; } = 2;
         public override string ProductName => "DynamicLOD";
         public override string ProductExePath => Path.Join(Path.Join(ProductPath, "bin"), ProductExe);
         public override bool RequireSimRunning => false;

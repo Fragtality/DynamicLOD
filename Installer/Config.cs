@@ -15,10 +15,10 @@ namespace Installer
 
         //Worker: .NET
         public virtual bool NetRuntimeDesktop { get; set; } = true;
-        public virtual string NetVersion { get; set; } = "10.0.9";
+        public virtual string NetVersion { get; set; } = "10.0.10";
         public virtual bool CheckMajorEqual { get; set; } = true;
-        public virtual string NetUrl { get; set; } = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/10.0.9/windowsdesktop-runtime-10.0.9-win-x64.exe";
-        public virtual string NetInstaller { get; set; } = "windowsdesktop-runtime-10.0.9-win-x64.exe";
+        public virtual string NetUrl { get; set; } = "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/10.0.10/windowsdesktop-runtime-10.0.10-win-x64.exe";
+        public virtual string NetInstaller { get; set; } = "windowsdesktop-runtime-10.0.10-win-x64.exe";
 
         public Config() : base()
         {
