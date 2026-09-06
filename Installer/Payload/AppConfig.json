@@ -37,7 +37,7 @@
       "SimVariant": 3,
       "SimProcess": "FlightSimulator2024",
       "SimModule": "FlightSimulator2024.exe",
-      "OffsetModuleBase": 177172024,
+      "OffsetModuleBase": 177176120,
       "OffsetPointer": 0,
       "OffsetPointerTlod": 1148,
       "OffsetPointerTlodVr": 1476,
@@ -68,7 +68,7 @@
       }
     }
   ],
-  "ConfigVersion": 3,
+  "ConfigVersion": 4,
   "LogInterval": 3,
   "SizeLimit": 10485760,
   "LogCount": 3,
