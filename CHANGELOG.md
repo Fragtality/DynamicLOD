@@ -1,6 +1,12 @@
 # Changelog
 
 
+## v0.4.3
+
+### App
+- Fixed Memory Locations for MSFS2024 SU6.1 (Steam)
+
+<br/><br/>
 ## v0.4.2
 
 ### App
