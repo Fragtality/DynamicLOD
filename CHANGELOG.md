@@ -1,6 +1,17 @@
 # Changelog
 
 
+## v0.4.4
+
+### App
+- Updated NuGet Packages
+- Updated MSFS SimConnect SDK
+
+
+### Installer
+- Set .NET 10.0.12 as Target
+
+<br/><br/>
 ## v0.4.3
 
 ### App
