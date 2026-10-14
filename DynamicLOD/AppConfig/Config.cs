@@ -51,7 +51,7 @@ namespace DynamicLOD.AppConfig
                     SimVariant = SimVariant.MSFS2024_MSSTORE,
                     SimProcess = "FlightSimulator2024",
                     SimModule = "FlightSimulator2024.exe",
-                    OffsetModuleBase = 0xA5BFE68,
+                    OffsetModuleBase = 0xA80AEF8,
                     OffsetPointer = 0x0,
                     OffsetPointerTlod = 0x47C,
                     OffsetPointerOlod = 0x490,
@@ -64,7 +64,7 @@ namespace DynamicLOD.AppConfig
                     SimVariant = SimVariant.MSFS2024_STEAM,
                     SimProcess = "FlightSimulator2024",
                     SimModule = "FlightSimulator2024.exe",
-                    OffsetModuleBase = 0xA8F7E38,
+                    OffsetModuleBase = 0xAACEEC8,
                     OffsetPointer = 0x0,
                     OffsetPointerTlod = 0x47C,
                     OffsetPointerOlod = 0x490,
@@ -114,7 +114,7 @@ namespace DynamicLOD.AppConfig
                 var newconf = new Config();
                 this.SimPointerDefinitions = newconf.SimPointerDefinitions;
             }
-            else if (ConfigVersion < 4 && buildConfigVersion >= 4)
+            else if (ConfigVersion < 5 && buildConfigVersion >= 5)
             {
                 var newconf = new Config();
                 this.SimPointerDefinitions = newconf.SimPointerDefinitions;
