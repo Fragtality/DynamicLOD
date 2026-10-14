@@ -1,6 +1,17 @@
 # Changelog
 
 
+## v0.4.5
+
+### App
+- Updated 2024 Memory Offsets for SU7 (Steam, Store)
+- Updated SimConnect SDK
+- Updated .NET Packages
+
+### Installer
+- Set .NET 10.0.13 as Target
+
+<br/><br/>
 ## v0.4.4
 
 ### App
