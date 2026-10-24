@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>0.4.5</Version>
+    <Version>0.4.6</Version>
     <Title>$(AssemblyName)</Title>
     <Authors>Fragtality</Authors>
     <Company>Fragtality</Company>
