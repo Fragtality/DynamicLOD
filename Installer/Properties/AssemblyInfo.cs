@@ -5,7 +5,7 @@ using System.Windows;
 // Allgemeine Informationen über eine Assembly werden über die folgenden
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die einer Assembly zugeordnet sind.
-[assembly: AssemblyTitle("DynamicLOD Installer v0.4.6.0 (2026.10.24.1408)")]
+[assembly: AssemblyTitle("DynamicLOD Installer v0.4.6.0 (2026.10.27.2014)")]
 [assembly: AssemblyDescription("Installer Application for DynamicLOD")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fragtality")]
